@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+						
+			private static const FIREBASE_API_KEY:String = "YOUR-API-KEY";
+			private static const FIREBASE_CREATE_AUTH_URL:String = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/createAuthUri?key="+FIREBASE_API_KEY;
+			private static const FIREBASE_VERIFY_ASSERTION_URL:String = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyAssertion?key="+FIREBASE_API_KEY;
+			private static const FIREBASE_REDIRECT_URL:String = "https://<YOUR-PROJECT-ID>.firebaseapp.com/__/auth/handler";
+			private var webView:StageWebView;		
+			private var sessionId:String;
+			private var requestUri:String;
+						
+			private function startAuth(provider:String):void
+			{			
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.continueUri = FIREBASE_REDIRECT_URL;
+				myObject.providerId = provider;
+				
+				var request:URLRequest = new URLRequest(FIREBASE_CREATE_AUTH_URL);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, authURLCreated);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);			
+			}
+			
+			private function authURLCreated(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				
+				//We store the sessionId value from the response for later use
+				sessionId = rawData.sessionId;
+				
+				webView = new StageWebView();
+				webView.addEventListener(LocationChangeEvent.LOCATION_CHANGE, changeLocation);
+				webView.stage = this.stage;
+				webView.viewPort = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
+				
+				//We load the URL from the response, it will automatically contain the client id, scopes and the redirect URL
+				webView.loadURL(rawData.authUri);
+			}
+			
+			private function changeLocation(event:LocationChangeEvent):void
+			{			
+				var location:String = webView.location;
+				
+				if(location.indexOf("/__/auth/handler?code=") != -1 || location.indexOf("/__/auth/handler?state=") != -1 || location.indexOf("/__/auth/handler#state=") != -1){
+					
+					//We are looking for a code parameter in the URL, once we have it we dispose the webview and prepare the last URLRequest	
+					webView.removeEventListener(LocationChangeEvent.LOCATION_CHANGE, changeLocation);
+					webView.dispose();
+					
+					requestUri = location;
+					getAccountInfo();
+				}           
+			}
+			
+			private function getAccountInfo():void
+			{     
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.requestUri = requestUri;
+				myObject.sessionId = sessionId;
+				
+				var request:URLRequest = new URLRequest(FIREBASE_VERIFY_ASSERTION_URL);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, registerComplete);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);		
+			}			
+			
+			private function registerComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+			}
+			
+			private function errorHandler(event:flash.events.IOErrorEvent):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0">
+		<s:Button id="facebookButton" label="Sign in with Facebook" click="startAuth('facebook.com')"/>
+		<s:Button id="twitterButton" label="Sign in with Twitter" click="startAuth('twitter.com')"/>
+		<s:Button id="googleButton" label="Sign in with Google" click="startAuth('google.com')"/>
+	</s:VGroup>
+	
+</s:WindowedApplication>

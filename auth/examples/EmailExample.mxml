@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Script>
+		<![CDATA[
+			
+			private static const FIREBASE_API_KEY:String = "YOUR-API-KEY";
+			
+			/*
+			Register a new User using Email and Password
+			*/
+			private function register():void
+			{
+				var myObject:Object = new Object();
+				myObject.email = emailInput.text;
+				myObject.password = passwordInput.text;
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, registerComplete);
+				loader.load(request);				
+			}
+			
+			private function registerComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}	
+			
+			/*
+			Sign In
+			*/
+			private function signIn():void
+			{
+				var myObject:Object = new Object();
+				myObject.email = emailInput.text;
+				myObject.password = passwordInput.text;
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, signInComplete);
+				loader.load(request);				
+			}
+			
+			private function signInComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}
+						
+			/*
+			Reset User Password
+			*/
+			private function resetPassword():void
+			{
+				var myObject:Object = new Object();
+				myObject.email = emailInput.text;
+				myObject.requestType = "PASSWORD_RESET";
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, resetPasswordComplete);
+				loader.load(request);				
+			}
+			
+			private function resetPasswordComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+			/*
+			Verify Email Address
+			*/
+			private function verifyEmail(idToken:String):void
+			{
+				var myObject:Object = new Object();
+				myObject.email = emailInput.text;
+				myObject.idToken = idToken;
+				myObject.requestType = "VERIFY_EMAIL";
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, verifyEmailComplete);
+				loader.load(request);				
+			}
+			
+			private function verifyEmailComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+			/*
+			Get Account Information
+			*/
+			private function getAccountInfo(idToken:String):void
+			{
+				var myObject:Object = new Object();
+				myObject.email = emailInput.text;
+				myObject.idToken = idToken;
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, getAccountInfoComplete);
+				loader.load(request);
+			}
+			
+			private function getAccountInfoComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+			/*
+			Set Account Information
+			*/
+			private function setAccountInfo(idToken:String):void
+			{
+				var myObject:Object = new Object();
+				//You can comment the email or password values if you don't need to change them
+				myObject.email = emailInput.text;
+				myObject.passwrod = passwordInput.text;
+				myObject.idToken = idToken;
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, setAccountInfoComplete);
+				loader.load(request);
+			}
+			
+			private function setAccountInfoComplete(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}			
+			
+			/*
+			Delete Account
+			*/
+			private function deleteAccount(idToken:String):void
+			{
+				var myObject:Object = new Object();
+				myObject.idToken = idToken;
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();	
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.addEventListener(flash.events.Event.COMPLETE, accountDeleted);
+				loader.load(request);				
+			}
+			
+			private function accountDeleted(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+			/*
+			ErrorHandler
+			*/
+			private function errorHandler(event:flash.events.IOErrorEvent):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:VGroup horizontalCenter="0" verticalCenter="0">
+		<s:TextInput id="emailInput" prompt="Type an Email Address"/>
+		<s:TextInput id="passwordInput" prompt="Type a Password"/>
+		<s:Button id="registerButton" label="Sign Up" click="register()"/>
+		<s:Button id="signInButton" label="Sign in" click="signIn()"/>
+		<s:Button id="resetPasswordButton" label="Reset Password" click="resetPassword()"/>
+		<s:Button id="verifyEmailButton" label="Verify Email" click="verifyEmail('x')"/>
+		<s:Button id="getAccountInfoButton" label="Get Account Info" click="getAccountInfo('x')"/>
+		<s:Button id="setAccountInfoButton" label="Set Account Info" click="setAccountInfo('x')"/>
+		<s:Button id="deleteAccountButton" label="Delete Account" click="deleteAccount('x')"/>
+	</s:VGroup>
+	
+</s:WindowedApplication>

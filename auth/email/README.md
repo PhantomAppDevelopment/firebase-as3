@@ -1,0 +1,387 @@
+# Email and Password
+
+Sometimes you require a way for your users to log in into your app with out using Facebook, Twitter or Google. Firebase provides two more ways to achieve this:
+
+* Email/Password Auth
+* Anonymous Auth
+
+Firebase uses the Google Identity Toolkit to achieve this.
+
+## Getting Started
+
+Follow these steps to enable Email/Password Auth:
+
+1. Open the [Firebase console](https://firebase.google.com) and select your project.
+2. Click the `Auth` option in the left side menu.
+3. Click the `SIGN-IN METHOD` button in the top menu and then select `Email/Password` from the providers list.
+4. Click the `Enable` toggle button and set it to `on` and then press the `Save` button.
+
+You might also want to repeat these steps for the `Anonymous` provider (only if you want to have Anonymous users).
+
+## Implementation
+
+All the requests must be sent via POST and with the following URLRequestHeader: `"Content-Type", "application/json"`.
+
+You must also JSON encode the request body. ActionScript offers a built in JSON class to achieve this.
+
+It is strongly recommended to add an `IOErrorEvent` handler to all the api calls since Firebase returns useful error information.
+
+```actionscript
+private function errorHandler(event:flash.events.IOErrorEvent):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+## Registering a New User (Sign Up)
+
+To register a new user you only require to provide a valid formatted Email Address and a non weak Password.
+
+```actionscript
+private function register():void
+{
+    var myObject:Object = new Object();
+    myObject.email = emailInput.text;
+    myObject.password = passwordInput.text;
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, registerComplete);
+    loader.load(request);				
+}
+			
+private function registerComplete(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#SignupNewUserResponse",
+    "idToken": "<A long String>",
+    "email": "someone@example.com",
+    "refreshToken": "<A long String>",
+    "expiresIn": "3600",
+    "localId": "I7auXeJz2VgOYWmQajpAyjqYFr23"
+}
+```
+The user will automatically appear in the Auth section from your Firebase console.
+
+For an Anonymous approach, you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
+
+Make sure to save this response inside the app so you can use it later to perform Auth requests and account managing.
+
+## Verifying Credentials (Sign In)
+
+To sign in a user you only require to provide their valid Email Address and Password
+
+```actionscript
+private function register():void
+{
+    var myObject:Object = new Object();
+    myObject.email = emailInput.text;
+    myObject.password = passwordInput.text;
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, signInComplete);
+    loader.load(request);				
+}
+			
+private function signInComplete(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#VerifyPasswordResponse",
+    "localId": "I7auXeJz2VgOYWmQajpAyjqYFr23",
+    "email": "someone@example.com",
+    "displayName": "",
+    "idToken": "<A long String>",
+    "registered": true
+}
+```
+
+Note that failing to enter the correct password 3 times in a row will block the IP for future login attempts for a while.
+
+## Password Reset
+
+When you want to reset a password, an email is sent to the registered Email Address containing a link where the user will be able to reset their password.
+
+You only require to send two parameters:
+
+* `email` is the Email Address you want to send the Password recovery email.
+* `requestType` with the value: `PASSWORD_RESET`
+
+```actionscript
+private function resetPassword():void
+{
+    var myObject:Object = new Object();
+    myObject.email = emailInput.text;
+    myObject.requestType = "PASSWORD_RESET";
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, resetPasswordComplete);
+    loader.load(request);				
+}
+			
+private function resetPasswordComplete(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#GetOobConfirmationCodeResponse",
+    "email": "someone@example.com"
+}
+```
+
+An email with instructions will be sent to the desired email address. You can customize the template of emails in the Auth section from the Firebase console.
+
+## Verify Email
+
+When you require that Email Addresses are actually real you can make the user confirm their Email Address by sending them an email with a confirmation link.
+
+This is commonly used in forums and e-commerce. 
+
+This method is similar to the Reset Password one, you need to provide the following parameters:
+
+* `email` is the email address you want to verify.
+* `requestType` with the value: `EMAIL_VERIFY`
+* `idToken` is a long encoded String that contains user information. You can obtain this String from the response Object in the Sign Up and Sign In methods. 
+
+```actionscript
+private function verifyEmail(idToken:String):void
+{
+    var myObject:Object = new Object();
+    myObject.email = emailInput.text;
+    myObject.idToken = idToken;
+    myObject.requestType = "EMAIL_VERIFY";
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getOobConfirmationCode?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, verifyEmailComplete);
+    loader.load(request);				
+}
+			
+private function verifyEmailComplete(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#GetOobConfirmationCodeResponse",
+    "email": "someone@example.com"
+}
+```
+
+An email with instructions will be sent to the desired email address. You can customize the template of emails in the Auth section from the Firebase console.
+
+## Get Account info
+
+This method is used for retrieving the logged in user information, very useful to check if a user has confirmed their Email Address.
+
+This method only requires a valid Email Address and an `idToken`. You will call this method right after Sign In or Sign Up since those methods return a fresh `idToken`.
+
+```actionscript
+private function getAccountInfo(idToken:String):void
+{
+    var myObject:Object = new Object();
+    myObject.email = emailInput.text;
+    myObject.idToken = idToken;
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, getAccountInfoComplete);
+    loader.load(request);				
+}
+			
+private function getAccountInfoComplete(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#GetAccountInfoResponse",
+    "users": [
+        {
+            "localId": "I7auXeJz2VgOYWmQajpAyjqYFr23",
+            "email": "someone@example.com",
+            "emailVerified": true,
+            "providerUserInfo": [
+                {
+                    "providerId": "password",
+                    "federatedId": "someone@example.com",
+                    "email": "someone@example.com",
+                    "rawId": "someone@example.com"
+                }
+            ],
+            "passwordHash": "UkVEQUNURUQ=",
+            "passwordUpdatedAt": 1.473621716E12,
+            "validSince": "1473621716",
+            "lastLoginAt": "1473625365000",
+            "createdAt": "1473621716000"
+        }
+    ]
+}
+```
+## Set Account Info
+
+To change the Email and or Password for an account you only require to specify which fields do you want to change and provide a valid `idToken`
+
+```actionscript
+private function setAccountInfo(idToken:String):void
+{
+    var myObject:Object = new Object();
+    //You can comment the email or password values if you don't need to change them
+    myObject.email = emailInput.text;
+    myObject.password = passwordInput.text;
+    myObject.idToken = idToken;
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/setAccountInfo?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, setAccountInfoComplete);
+    loader.load(request);				
+}
+			
+private function setAccountInfoComplete(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+A successful response from a Password change will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#SetAccountInfoResponse",
+    "localId": "I7auXeJz2VgOYWmQajpAyjqYFr23",
+    "email": "someone@example.com",
+    "passwordHash": "UkXEHANURUR=",
+    "providerUserInfo": [
+        {
+            "providerId": "password",
+            "federatedId": "someone@example.com"
+        }
+    ]
+}
+```
+
+A successful response from an Email change will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#SetAccountInfoResponse",
+    "localId": "I7auXeJz2VgOYWmQajpAyjqYFr23",
+    "email": "someone@example2.com",
+    "passwordHash": "UkXEHANURUR=",
+    "providerUserInfo": [
+        {
+            "providerId": "password",
+            "federatedId": "someone@example2.com"
+        }
+    ],
+    "idToken": "<A long String>"
+}
+```
+
+The Email Address is updated to the new one but it needs to be confirmed or it will turn back to its previous state. An email containing a confirmation link is automatically sent to the original Email Address.
+
+## Delete Account
+
+To delete an account you only require to provide a valid `idToken`.
+
+```actionscript
+private function deleteAccount(idToken:String):void
+{
+    var myObject:Object = new Object();
+    myObject.idToken = idToken;
+				
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+    var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+				
+    var loader:URLLoader = new URLLoader();	
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.addEventListener(flash.events.Event.COMPLETE, accountDeleted);
+    loader.load(request);				
+}
+			
+private function accountDeleted(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+}
+```
+
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "kind": "identitytoolkit#DeleteAccountResponse"
+}
+```
