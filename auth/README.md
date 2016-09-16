@@ -23,7 +23,7 @@ The Google provider has been successfully enabled.
 * Click [here](./twitter) to read the Twitter setup process.
 
 ## Email with Password and Anonymous
-*Main article: [Email & Password Auth](./email)*
+*Main guide: [Email & Password Auth](./email)*
 
 Firebase Auth can also work without using a Federated provider. Email and Anonymous auth have been separated into their own guide.
 
@@ -47,13 +47,13 @@ private var sessionId:String;
 private var requestUri:String;
 ```
 
-Firebase uses Google Identity Toolkit for its Auth backend. Add one or more buttons and assign them an `EventListener` to them when they get pressed.
+Firebase uses Google Identity Toolkit for its Auth backend. Add one or more buttons and assign them an `EventListener` for when they get clicked/pressed.
 
 I recommend to use the following function if you are using several providers and call it with the provider of your choice:
 
 ```actionscript
 
-private function facebookButtonHandler():void
+private function signInButtonHandler(event:Event):void
 {
     //The startAuth function only requires one parameter, a String with the domain corresponding to the provider you want to authenticate
     startAuth("facebook.com"); //Use this for Facebook
@@ -135,17 +135,17 @@ private function changeLocation(event:LocationChangeEvent):void
 }
 ```
 
-Here is where things start getting hard since there's no official documentation. This is what is supossed to happen:
+Here is where things start getting hard since there's no official documentation. This is what happens:
 
-1. Once a successful authentication has been made, the StageWebView will change its URL to a 'success' page.
-2. This success page contains a `code`, but thankfully we won't need to parse the code, only check if it exists.
-3. After further testing I noticed that the success URL varies its form depending on the provider that was used.
+1. Once a successful Sign-In has been made, the StageWebView will change its URL to a 'success' page.
+2. This success page contains a `code` in its URL, thankfully we won't need to parse the code, only check if it exists.
+3. The success page URL varies its form depending on the provider that was used.
 
-* Facebook success URL code part looks like `?code=`
-* Twitter success URL code part looks like `?state=`
-* Google success URL code part looks like `#state=`
+* Facebook success URL code = `?code=`
+* Twitter success URL code = `?state=`
+* Google success URL code = `#state=`
 
-In the previous snippet I added the conditional to detect if the code exists in any of the 3 providers previously mentioned.
+In the snippet `changeLocation` function, a conditional was added to detect if the code exists in any of the 3 providers previously mentioned.
 
 4. Once we have an URL that contains the `code` we save it to a String and then call our next function `getAccountInfo()`
 
@@ -172,7 +172,7 @@ private function getAccountInfo():void
 
 We created another `URLRequest` with 2 parameters:
 
-* `requestUri` is the URI that contains the `code`, this code will be parsed by the Google Identity Toolkit servers and then used to connect to their respective OAuth servers to retrieve the logged in user profile information.
+* `requestUri` is the URI that contains the `code`, this code will be parsed by the Google Identity Toolkit service and then used to retrieve the logged in user profile information from the choosen provider.
 * `sessionId` is from the very start when we requested the `authUri`.
 
 Now we add the `registerComplete` function that will contain the logged in user information.
@@ -185,18 +185,59 @@ private function registerComplete(event:flash.events.Event):void
 }
 ```
 
-If everything was successful you will receive a JSON file with detailed information about the logged in user. You will be able to see the user on your [Firebase console](https://firebase.gogole.com) in the Auth section.
+If everything was successful you will receive a JSON file with detailed information about the logged in user. You will be able to see the newly registered user on your [Firebase console](https://firebase.gogole.com) in the Auth section.
 
 This information is formatted the same for all providers, the most important values are:
 
 Name | Description
 ---|---
 `localId`| A unique id assigned for the logged in user for your specific Firebase project. This is very useful when working with Firebase Database and Firebase Storage.
-`idToken`| An Auth token used to access protected data and files from Firebase Database and Firebase Storage. For more information go to the Firebase Database and Firebase Storage guides.
-`displayName`| The logged in user full name (Google and Facebook) or they handler in Twitter.
+`idToken`| An Auth token used to access protected data and files from Firebase Database and Firebase Storage. For more information you can read the Firebase Database and Firebase Storage guides.
+`displayName`| The logged in user full name (Google and Facebook) or their handler in Twitter.
 `photoUrl`| The logged in user avatar.
 `email`| The logged in user email address.
 
 Note that not all providers return the same information, for example Twitter doesn't return an Email Address.
 
-Once you have the profile information you might want to save it on an Object that can be globally accessed, you will need it when performing Auth requests.
+Once you have the profile information you might want to save it on an Object that can be globally accessed, you will need it when performing Auth requests against Firebase Database and Firebase Storage.
+
+## Refreshing the idToken
+
+By default the `idToken` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
+To refresh an `idToken` you will only need to provide the previous one and specify the `grant_type` as `"authorization_code`.
+
+```actionscript
+private function refreshToken(idToken:String):void
+{
+	var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+			
+	var myObject:Object = new Object();
+	myObject.grant_type = "authorization_code";
+	myObject.code = idToken;			
+			
+	var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
+	request.method = URLRequestMethod.POST;
+	request.data = JSON.stringify(myObject);
+	request.requestHeaders.push(header);
+			
+	var loader:URLLoader = new URLLoader();
+	loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+	loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+	loader.load(request);	
+}
+		
+private function refreshTokenLoaded(event:flash.events.Event):void
+{
+    var rawData:Object = JSON.parse(event.currentTarget.data);
+    var newIdToken:String = rawData.access_token;
+}
+
+private function errorHandler(event:flash.events.IOErrorEvent):void
+{
+	trace(event.currentTarget.data);
+}
+``` 
+
+Once you have got the `access_token` you are ready to continue performing secure operations against the Firebase Database and Firebase Storage.
+
+This method applies to both Federated and non Fedarated logins.

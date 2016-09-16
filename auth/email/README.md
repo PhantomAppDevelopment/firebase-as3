@@ -1,11 +1,11 @@
 # Email and Password
 
-Sometimes you require a way for your users to log in into your app with out using Facebook, Twitter or Google. Firebase provides two more ways to achieve this:
+Firebase provides 2 options when you require a way for your users to log in into your app without using Facebook, Twitter or Google.
 
 * Email/Password Auth
 * Anonymous Auth
 
-Firebase uses the Google Identity Toolkit to achieve this.
+Firebase also uses the Google Identity Toolkit to achieve this.
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ Follow these steps to enable Email/Password Auth:
 3. Click the `SIGN-IN METHOD` button in the top menu and then select `Email/Password` from the providers list.
 4. Click the `Enable` toggle button and set it to `on` and then press the `Save` button.
 
-You might also want to repeat these steps for the `Anonymous` provider (only if you want to have Anonymous users).
+You might also want to repeat these steps for the `Anonymous` provider only if you want to have Anonymous users.
 
 ## Implementation
 
@@ -38,11 +38,11 @@ private function errorHandler(event:flash.events.IOErrorEvent):void
 To register a new user you only require to provide a valid formatted Email Address and a non weak Password.
 
 ```actionscript
-private function register():void
+private function register(email:String, password:String):void
 {
     var myObject:Object = new Object();
-    myObject.email = emailInput.text;
-    myObject.password = passwordInput.text;
+    myObject.email = email;
+    myObject.password = password;
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				
@@ -74,9 +74,9 @@ A successful response will look like the following JSON structure:
     "localId": "I7auXeJz2VgOYWmQajpAyjqYFr23"
 }
 ```
-The user will automatically appear in the Auth section from your Firebase console.
+The user will be automatically registered in the Auth section from your Firebase console.
 
-For an Anonymous approach, you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
+For an Anonymous approach you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
 
 Make sure to save this response inside the app so you can use it later to perform Auth requests and account managing.
 
@@ -85,11 +85,11 @@ Make sure to save this response inside the app so you can use it later to perfor
 To sign in a user you only require to provide their valid Email Address and Password
 
 ```actionscript
-private function register():void
+private function register(email:String, password:String):void
 {
     var myObject:Object = new Object();
-    myObject.email = emailInput.text;
-    myObject.password = passwordInput.text;
+    myObject.email = email;
+    myObject.password = password;
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				
@@ -127,18 +127,16 @@ Note that failing to enter the correct password 3 times in a row will block the 
 
 ## Password Reset
 
-When you want to reset a password, an email is sent to the registered Email Address containing a link where the user will be able to reset their password.
-
-You only require to send two parameters:
+To reset a password you only require to provide 2 parameters:
 
 * `email` is the Email Address you want to send the Password recovery email.
 * `requestType` with the value: `PASSWORD_RESET`
 
 ```actionscript
-private function resetPassword():void
+private function resetPassword(emai:String):void
 {
     var myObject:Object = new Object();
-    myObject.email = emailInput.text;
+    myObject.email = email;
     myObject.requestType = "PASSWORD_RESET";
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
@@ -173,9 +171,9 @@ An email with instructions will be sent to the desired email address. You can cu
 
 ## Verify Email
 
-When you require that Email Addresses are actually real you can make the user confirm their Email Address by sending them an email with a confirmation link.
+When you require that Email Addresses are actually real you can prompt the user to confirm their Email Address by sending them an email with a confirmation link.
 
-This is commonly used in forums and e-commerce. 
+This is commonly used in message boards and ecommerce solutions. 
 
 This method is similar to the Reset Password one, you need to provide the following parameters:
 
@@ -184,10 +182,10 @@ This method is similar to the Reset Password one, you need to provide the follow
 * `idToken` is a long encoded String that contains user information. You can obtain this String from the response Object in the Sign Up and Sign In methods. 
 
 ```actionscript
-private function verifyEmail(idToken:String):void
+private function verifyEmail(idToken:String, email:String):void
 {
     var myObject:Object = new Object();
-    myObject.email = emailInput.text;
+    myObject.email = email;
     myObject.idToken = idToken;
     myObject.requestType = "EMAIL_VERIFY";
 				
@@ -225,13 +223,13 @@ An email with instructions will be sent to the desired email address. You can cu
 
 This method is used for retrieving the logged in user information, very useful to check if a user has confirmed their Email Address.
 
-This method only requires a valid Email Address and an `idToken`. You will call this method right after Sign In or Sign Up since those methods return a fresh `idToken`.
+This method only requires a valid Email Address and an `idToken`. You should call this method right after a Sign In or Sign Up request since those methods return a fresh `idToken`.
 
 ```actionscript
-private function getAccountInfo(idToken:String):void
+private function getAccountInfo(idToken:String, email:String):void
 {
     var myObject:Object = new Object();
-    myObject.email = emailInput.text;
+    myObject.email = email;
     myObject.idToken = idToken;
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
@@ -285,12 +283,12 @@ A successful response will look like the following JSON structure:
 To change the Email and or Password for an account you only require to specify which fields do you want to change and provide a valid `idToken`
 
 ```actionscript
-private function setAccountInfo(idToken:String):void
+private function setAccountInfo(idToken:String, email:String = null, password:String = null):void
 {
     var myObject:Object = new Object();
     //You can comment the email or password values if you don't need to change them
-    myObject.email = emailInput.text;
-    myObject.password = passwordInput.text;
+    myObject.email = email;
+    myObject.password = password;
     myObject.idToken = idToken;
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");

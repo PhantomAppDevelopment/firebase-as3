@@ -25,7 +25,7 @@ You only need to change the project name in the beginning of the URI.
 6. Go back to the [Firebase console](https://firebase.google.com) and select your project.
 7. Click the `Auth` option in the left side menu.
 8. Click the `SIGN-IN METHOD` button in the top menu and then select `Twitter` from the providers list.
-9. Click the `Enable` toggle button and set it to `on`, you will be asked for the `API Key` and `API secret` which are the `Consumer Key` and `Consumer Secret` respectively.
+9. Click the `Enable` toggle button and set it to `on`, you will be asked for the `API Key` and `API Secret` which are the `Consumer Key` and `Consumer Secret` respectively.
 10. Once you have finished filling the form press the `Save` button.
 
 The Twitter provider has been successfully enabled and configured.

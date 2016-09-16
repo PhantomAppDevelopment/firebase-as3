@@ -2,9 +2,9 @@
 
 Firebase offers a very flexible and secure way to save text-based data.
 
-This guide will show some of the most common scenarios and it will explain how to use Rules for your database. It is also written from ActionScript and SQL perspectives.
+This guide will show some of the most common scenarios and it will explain how to use Rules for your database. It is also written from an ActionScript and SQL perspective.
 
-A simple `CRUD` [example](./examples) has been provided for your convenience, it only requires a recent version of `Apache Flex`.
+A simple `CRUD` [example](./examples) has been provided for your convenience, it only requires a recent version of `Apache Flex` to compile.
 
 ## Understanding the Data
 
@@ -29,7 +29,7 @@ To modify the Rules follow these steps:
 
 ## Public
 
-Let's say you want to create a public feed with the contents of a node named `news`, so everyone on the Internet can read it.
+In the following example we will make the contents of a node named `news` available to read for everyone on the Internet.
 
 ```json
 {
@@ -42,9 +42,9 @@ Let's say you want to create a public feed with the contents of a node named `ne
 }
 ```
 
-These rules mean that anyone can read the `news` node, but no one can write (modify) them.
+These rules mean that anyone can read the `news` node, but no one can write (modify) it.
 
-Now you want to make a public message board where anyone can post anything, one example could be an app that receives anonymous feedback.
+Now we want to make a public message board where anyone can post anything, one example could be an app that receives anonymous feedback.
 
 ```json
 {
@@ -62,7 +62,7 @@ For this case it is recommended to use `Anonymous` auth.
 
 ## Private (Registered Users only)
 
-Let's say you have another node named `specialoffers` and you want them to only be accessed by registered users from your app.
+In the following example we will make the contents of a node named `specialoffers` available to read for only registered users from your project.
 
 ```json
 {
@@ -81,7 +81,7 @@ This rule is almost the same as the default one, the only difference is that it 
 
 This is where Firebase auth and rules are best used; each user can save their own data that they can only read and write.
 
-A real life example: an app where users can manage a To-Do list.
+A common example is an app where users can manage a todo list.
 
 ```json
 {
@@ -97,7 +97,7 @@ A real life example: an app where users can manage a To-Do list.
 ```
 
 We have a main `todos` node. Inside that node each user will have their own sub node.
-Each sub node wil contain the to do's from the specified user.
+Each sub node wil contain the todos from the specified user.
 
 The `auth.uid` parameter means the following:
 
@@ -110,48 +110,11 @@ The `auth.uid` parameter means the following:
 
 An Authentication Token is an encoded string that contains information about the user that is trying to perform an operation against the database.
 
-The default expiration time of a Firebase generated Authentication token is 60 minutes.
-
 There are several ways to generate these tokens, this guide will only explain how to do it using Google Identity Toolkit so you won't require to do Crytographic wizardy.
 
-The first time a user authenticates and everytime they re-authenticate in your app, you will need to read the response JSON. It will contain a very special value, the `idToken`.
+For more detailed information on how to generate and manage an `idToken` please consult the [auth guide](/../auth).
 
-This `idToken` will be exchanged for an `access_token` which is actually the `Authentication token`, it contains all the information required for a successful Database/Storage authentication.  
-
-```actionscript
-private function getAccessToken(idToken:String):void
-{
-	var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
-			
-	var myObject:Object = new Object();
-	myObject.grant_type = "authorization_code";
-	myObject.code = idToken;			
-			
-	var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
-	request.method = URLRequestMethod.POST;
-	request.data = JSON.stringify(myObject);
-	request.requestHeaders.push(header);
-			
-	var loader:URLLoader = new URLLoader();
-	loader.addEventListener(flash.events.Event.COMPLETE, accessTokenLoaded);
-	loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
-	loader.load(request);	
-}
-		
-private function accessTokenLoaded(event:flash.events.Event):void
-{
-    event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, accessTokenLoaded);
-    var rawData:Object = JSON.parse(event.currentTarget.data);
-    var FirebaseAuthToken:String = rawData.access_token;
-}
-
-private function errorHandler(event:flash.events.IOErrorEvent):void
-{
-	trace(event.currentTarget.data);
-}
-``` 
-
-Once you have got the `access_token` you are ready to perform secure operations against the Firebase database.
+Once you have got a fresh `idToken` you are ready to perform secure operations against the Firebase Database and Firebase Storage.
 
 ## Reading the Database
 
@@ -171,7 +134,6 @@ private function loadNews():void
 		
 private function newsLoaded(event:flash.events.Event):void
 {
-    event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, newsLoaded);
     trace(event.currentTarget.data);
     var rawData:Object = JSON.parse(event.currentTarget.data);								
 }
@@ -182,9 +144,9 @@ A simple GET request (the default for `URLRequest`) is enough. Remember to alway
 To load a Private resource use the following code:
 
 ```actionscript
-private function loadSpecialOFfers(FirebaseAuthToken:String):void
+private function loadSpecialOffers(idToken:String):void
 {
-    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/specialoffers.json?auth="+FirebaseAuthToken);
+    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/specialoffers.json?auth="+idToken);
 			
     var loader:URLLoader = new URLLoader();
     loader.addEventListener(flash.events.Event.COMPLETE, offersLoaded);
@@ -193,7 +155,6 @@ private function loadSpecialOFfers(FirebaseAuthToken:String):void
 		
 private function offersLoaded(event:flash.events.Event):void
 {
-    event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, offersLoaded);
     trace(event.currentTarget.data);
     var rawData:Object = JSON.parse(event.currentTarget.data);								
 }
@@ -233,7 +194,7 @@ We used a `ProgressEvent.PROGRESS` instead of the usual `Event.COMPLETE`. Everyt
 
 Remember to remove the event listener once you have finished working with the realtime data or it will continue listening to it.
 
-Auth works exactly the same as with non-realtime data, you only need to provide the `auth` parameter with a valid `idToken`.
+Auth works exactly the same as with non-realtime data, you only need to provide the `auth` parameter with a valid `idToken` in the URL.
 
 ## Modyfing the Database
 
@@ -246,11 +207,11 @@ The `auth` parameter is only required when you want to modify private resources.
 In this example we are adding an entry to a node named `journal` with the following parameters: `title`, `description` and `timestamp`.
 
 ```actionscript
-private function saveEntry():void
+private function saveEntry(title:String, description:String):void
 {
     var myObject:Object = new Object();
-    myObject.title = titleInput.text;
-    myObject.description = descriptionInput.text;
+    myObject.title = title;
+    myObject.description = description;
     myObject.timestamp = new Date().getTime();
 				
     var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/journal.json");
@@ -264,7 +225,6 @@ private function saveEntry():void
 		
 private function entrySent(event:flash.events.Event):void
 {
-    event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, entrySent);
     trace(event.currentTarget.data);
 }
 ```
@@ -302,7 +262,6 @@ private function deleteEntry():void
 
 private function entryDeleted(event:flash.events.Event):void
 {
-    event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, entryDeleted);
     trace(event.currentTarget.data);
 }
 ```
@@ -324,13 +283,13 @@ A successful response returns a `null` value.
 Sometimes we just want to change a single value from a node. We only need to specify the path of the node, the data to be changed and a special `URLRequestHeader`.
 
 ```actionscript
-private function updateEntry():void
+private function updateEntry(title:String, description:String):void
 {
     var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "PATCH");			
     
     var myObject:Object = new Object();
-    myObject.title = titleInput.text;
-    myObject.description = descriptionInput.text;
+    myObject.title = title;
+    myObject.description = description;
 
     var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/journal/-KRQvdxVELCITxtUynvx.json");
     request.data = JSON.stringify(myObject);
@@ -344,7 +303,6 @@ private function updateEntry():void
 
 private function entryUpdated(event:flash.events.Event):void
 {
-    event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, entryUpdated);
     trace(event.currentTarget.data);
 }
 ```
@@ -358,7 +316,7 @@ A successful response will contain the values that were modified, in this case t
 }
 ```
 
-Make sure to always set the correct path or may modify other nodes by accident.
+Make sure to always set the correct path or you may modify other nodes by accident.
 
 ## User Specific Nodes
 
@@ -366,12 +324,12 @@ At the beginning of this guide we mentioned that Firebase excels at managing use
 
 To accomplish this, you only require to add the user `localId` as the node name.
 
-For example, we want that each user have their independent journal that they can only read and modify, the rules should look as follows:
+For example, we want that each user has their independent journal that they can only read and modify, the rules should look as follows:
 
 ```json
 {
     "rules": {
-        "journal": {
+        "journals": {
             "$user_id": {
                 ".read": "$user_id === auth.uid",
                 ".write": "$user_id === auth.uid"
@@ -381,16 +339,25 @@ For example, we want that each user have their independent journal that they can
 }
 ```
 
-When you want to modify or read their journal you should modify the URL from the api calls as follows:
+When you want to modify or read their journal you need to specify the users's `localId` (known as `uid` inside the rules)  and `idToken` as part of the URL.
 
-`https://<YOUR-PROJECT-ID>.firebaseio.com/journal.json`
+```actionscript
+private function loadPrivateJournal(localId:String, idToken:String):void
+{
+    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/journals/"+localId+".json?auth="+idToken);
+			
+    var loader:URLLoader = new URLLoader();
+    loader.addEventListener(flash.events.Event.COMPLETE, journalLoaded);
+    loader.load(request);
+}
 
-to
+private function journalLoaded(event:flash.events.Event):void
+{
+    trace(event.currentTarget.data);
+    var rawData:Object = JSON.parse(event.currentTarget.data);								
+}
+```
 
-`https://<YOUR-PROJECT-ID>.firebaseio.com/journal/<localId>.json?auth=FirebaseAuthToken`
+The `localId` and `auth` values can be obtained after a successful Sign In or Sign Up request.
 
-The `localId` and `auth` values can be obtained after a successful Sign or Sign Up request.
-
-The `auth` parameter is the Firebase Access Token, also known as the `idToken`.
-
-For more information on these values you can read the [Auth guide](./../auth/).
+For more information on these values you can read the [Firebase Auth guide](./../auth/).
