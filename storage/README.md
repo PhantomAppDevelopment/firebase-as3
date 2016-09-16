@@ -32,7 +32,7 @@ To modify the Rules follow these steps:
 
 ## Default Rules
 
-```language
+```
 service firebase.storage {
   match /b/<YOUR-PROJECT-ID>.appspot.com/o {
     match /{allPaths=**} {
@@ -48,7 +48,7 @@ These rules are very similar to the `Auth` default rules. They mean that any aut
 
 The following rules allows any user to upload, delete and mofify files from your entire bucket. Use this only while developing and testing.
 
-```language
+```
 service firebase.storage {
   match /b/<YOUR-PROJECT-ID>.appspot.com/o {
     match /{allPaths=**} {
@@ -62,7 +62,7 @@ service firebase.storage {
 
 Use the following rules if you need to host some files that anyone on the Internet can download, such as images, documents, audio and video.
 
-```language
+```
 service firebase.storage {
   match /b/<YOUR-PROJECT-ID>.appspot.com/o {
     match /{allPaths=**} {
@@ -74,7 +74,7 @@ service firebase.storage {
 
 These rules will allow anyone to read the contents of a folder named `public`.
 
-```language
+```
 service firebase.storage {
   match /b/<YOUR-PROJECT-ID>.appspot.com/o {
     match /public/} {
@@ -314,14 +314,14 @@ A successful response will look like the following JSON structure:
 }
 ```
 
-### User specific files
+### User Specific Files
 
 So far we have worked with the same file (`savegame.data`) in the same location (`savegames` folder),
 now we are going to step it up and make it so every registered user can have their own folder with their respective `savegame.data` file.
 
 The following rules specify that only authenticated users can read and write the file `savegame.data` that will be located inside a folder named the same as their `uid` (`localId`):
 
-```json
+```
 service firebase.storage {
     match /b/<YOUR-PROJECT-ID>.appspot.com/o {
         match /savegames/{userId}/savegame.data {
@@ -333,7 +333,7 @@ service firebase.storage {
 
 We can use the following rules if we want users to have control over their complete folder:
 
-```json
+```
 service firebase.storage {
     match /b/<YOUR-PROJECT-ID>.appspot.com/o {
         match /savegames/{userId}/{allPaths=**} {
