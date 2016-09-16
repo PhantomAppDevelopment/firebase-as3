@@ -48,15 +48,15 @@ From the `authDomain` we only need the id of the project, an example of an id is
 
 You can read the guides in any order but it is recommended to start with the [Firebase Auth guide](./auth).
 
-## FAQ
+## FAQs
 
-**What is the difference between these guides and existing Firebase ANEs?**
+### **What is the difference between these guides and existing Firebase ANEs?**
 
 Firebase ANEs are based on the Android and iOS official SDKs, providing all of their native features.
 
-These guides are based on the JavaScript SDK, keeping the same functioanlity inside the AIR runtime instead of a web browser.
+These guides are based on the JavaScript SDK, keeping the same functionality inside the AIR runtime instead of a web browser.
 
-**Which are the benefits of using these guides?**
+### **Which are the benefits of using these guides?**
 
 These guides work on Android, iOS, Windows and OSX using only the ActionScript 3 standard library, this will greatly reduce time when reusing your implementation code for all 4 platforms.
 
@@ -66,15 +66,15 @@ They are also a great way to understand how Firebase works behind the scenes.
 
 Free and open source!
 
-**Why only Database, Auth and Storage, what about the other Firebase features?**
+### **Why only Database, Auth and Storage, what about the other Firebase features?**
 
 These guides are based on the JavaScript SDK and therefore have their same limitation of being web based only. If you need the rest of features that Firebase offers I strongly recommend using an ANE.
 
-**Where did you got the documentation for Auth and Storage?**
+### **Where did you got the documentation for Auth and Storage?**
 
 I studied the JavaScript SDK and its official documentation, then I determined the API paths, requests, results and errors. 
 
-**What about Flash Player projects?**
+### **What about Flash Player projects?**
 
 For Flash Player projects I recommend using the `ExternalInterface` class with the official JavaScript SDK.
 
