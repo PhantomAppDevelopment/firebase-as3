@@ -145,7 +145,7 @@ Here is where things start getting hard since there's no official documentation.
 * Twitter success URL code = `?state=`
 * Google success URL code = `#state=`
 
-In the snippet `changeLocation` function, a conditional was added to detect if the code exists in any of the 3 providers previously mentioned.
+In the previous snippet, a conditional was added to detect if the code exists in any of the 3 providers previously mentioned.
 
 4. Once we have an URL that contains the `code` we save it to a String and then call our next function `getAccountInfo()`
 
