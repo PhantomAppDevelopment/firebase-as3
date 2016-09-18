@@ -192,7 +192,7 @@ This information is formatted the same for all providers, the most important val
 Name | Description
 ---|---
 `localId`| A unique id assigned for the logged in user for your specific Firebase project. This is very useful when working with Firebase Database and Firebase Storage.
-`idToken`| An Auth token used to access protected data and files from Firebase Database and Firebase Storage. For more information you can read the Firebase Database and Firebase Storage guides.
+`idToken`| An Authentication token that is used to identify the current logged in user. The `idToken` is heavily used in all Firebase features.
 `displayName`| The logged in user full name (Google and Facebook) or their handler in Twitter.
 `photoUrl`| The logged in user avatar.
 `email`| The logged in user email address.
@@ -201,7 +201,7 @@ Note that not all providers return the same information, for example Twitter doe
 
 Once you have the profile information you might want to save it on an Object that can be globally accessed, you will need it when performing Auth requests against Firebase Database and Firebase Storage.
 
-The `idToken` you receive from this response doesn't work with `auth` requests. You must exchange it for a new one using the next method.
+The `idToken` you receive from this response doesn't work with Firebase Database and Firebase Storage requests. You must exchange it for a new one using the next method. It still works for further Firebase Auth requests.
 
 ## Refreshing the idToken
 
@@ -254,5 +254,5 @@ A successful response will look like the following JSON structure:
 }
 ```
 
-Once you have got the `access_token` you are ready to continue performing secure operations against the Firebase Database and Firebase Storage.
+Once you have got the `access_token` you are ready to perform secure operations against the Firebase Database and Firebase Storage services.
 

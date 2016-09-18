@@ -98,7 +98,7 @@
 			}
 			
 			/*
-			Refresh token Block
+			Refresh Token Block
 			*/			
 			private function refreshToken(idToken:String):void
 			{
@@ -202,7 +202,7 @@
 			}
 			
 			/*
-			Send Message block
+			Send Message Block
 			*/			
 			private function sendMessage():void
 			{
@@ -227,7 +227,6 @@
 			
 			private function messageSent(event:flash.events.Event):void
 			{
-				trace(event.currentTarget.data);
 				messageInput.text = "";
 			}
 									

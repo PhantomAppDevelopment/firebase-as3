@@ -78,7 +78,7 @@ The user will be automatically registered in the Auth section from your Firebase
 
 For an Anonymous approach you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
 
-The `idToken` received from this response does work for `auth` requests.
+The `idToken` received from this response does work for the Firebase Database, Firebase Storage and Firebase Auth requests.
 
 ## Verifying Credentials (Sign In)
 
@@ -125,7 +125,8 @@ A successful response will look like the following JSON structure:
 
 Note that failing to enter the correct password 3 times in a row will block the IP for future login attempts for a while.
 
-The `idToken` received from this response doesn't work for `auth` requests. You must refresh the `idToken` to get a functional one (see bottom of this guide).
+The `idToken` received from this response doesn't work for Firebase Databasae and Firebase Storage requests. You must refresh the `idToken` to get a functional one (see bottom of this guide).
+It does still work for Firebase Auth requests. 
 
 ## Password Reset
 
@@ -436,3 +437,5 @@ A successful response will look like the following JSON structure:
     "project_id": "545203846422"
 }
 ```
+
+Once you have got the `access_token` you are ready to perform secure operations against the Firebase Database and Firebase Storage services.

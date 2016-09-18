@@ -8,7 +8,7 @@ It is strongly recommended to use recent versions of `Adobe AIR` and `Apache Fle
 
 An Apache Flex example that demonstrates how to use the Firebase Database with realtime data and Email auth. This project makes use of the `Responses.as` file that can be found in the [utils folder](./../utils).
 
-You will require to enable the `Email` provider for your project, you will also require the following rules in your project:
+You will require to enable the `Email` provider for your project, you will also require the following Database rules in your project:
 
 ```json
 {
@@ -23,7 +23,7 @@ You will require to enable the `Email` provider for your project, you will also 
 
 ## SimpleCRUD.mxml
 
-An Apache Flex example that demonstrates how to use the Firebase Database with non realtime data. You only require the following rules in your project:
+An Apache Flex example that demonstrates how to use the Firebase Database with non realtime data. You only require the following Database rules in your project:
 
 ```json
 {

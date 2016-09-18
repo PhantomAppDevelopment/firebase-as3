@@ -1,8 +1,8 @@
 # Firebase in ActionScript
 
-Firebase is a back end platform that offers several services to aid in the development of software, especially the ones that rely on server side infraestructure.
+Firebase is a back end platform that offers several services to aid in the development of apps and games, specially the ones that rely on server side infrastructure.
 
-Some of its services can be accesed by using RESTful techniques. This repository contains detailed guides and examples explaining how to use those services in your `Adobe AIR ` projects.
+Some of its services can be accessed by using RESTful techniques. This repository contains detailed guides and [examples](./examples) explaining how to use those services in your `Adobe AIR ` projects.
 
 You won't need an `ANE` for these guides, all of them work only using `StageWebView`, `URLRequest` and `URLLoader`.
 
@@ -13,7 +13,7 @@ This service allows you to securely authenticate users into your app. It uses Go
 
 * Leverages the use of OAuth, saving time and effort.
 * Authenticate with `Facebook`, `Google`, `Twitter`, `Email`, `Anonymous` and more.
-* Generates a `tokenId` that can be used for secure operations against Firebase Storage and Firebase Database.
+* Generates an `idToken` that can be used for secure operations against Firebase Storage and Firebase Database.
 
 ## Firebase Database
 *Main guide: [Firebase Database](./database)*
@@ -29,7 +29,7 @@ This service allows you to save and retrieve text based data. Some of its key fe
 ## Firebase Storage
 *Main guide: [Firebase Storage](./storage)*
 
-This service allows you to upload and maintain all kinds of files, including images, sounds, videos and binaries. It uses Google Cloud Messaging to provide this service. Some of its key features are:
+This service allows you to upload and maintain all kinds of files, including images, sounds, videos and binaries. It uses Google Cloud Storage to provide this service. Some of its key features are:
 
 * Securely save, retrieve and delete files using rules and Firebase Auth.
 * Load end edit metadata from files.
@@ -54,7 +54,7 @@ You can read the guides in any order but it is recommended to start with the [Fi
 
 Firebase ANEs are based on the Android and iOS official SDKs, providing all of their native features.
 
-These guides are based on the JavaScript SDK, keeping the same functionality inside the AIR runtime instead of a web browser.
+These guides are based on the JavaScript SDK, while keeping the same functionality inside the AIR runtime instead of a web browser.
 
 ### **Which are the benefits of using these guides?**
 

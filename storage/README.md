@@ -2,11 +2,11 @@
 
 Firebase Storage is based on Google Cloud Storage, a very easy and flexible solution for storing all kinds of files.
 
-Files are stored the same way as in your personal computer, using a tree hierarchy. This means there's a root folder, which can contain more folders and those folders can contain additional folders and files.
+Files are stored the same way as in your personal computer, using a tree hierarchy. This means there's a root folder which can contain more folders and those folders can contain additional folders and files.
 
 It is strongly recommended to avoid the use of special characters when naming files and folders.
 
-You need to have specific care for the slash character `(/)`. I recommend using this helper function to URL encode them:
+You need special care for the slash character `(/)`. I recommend using this helper function to URL encode them:
 
 ```actionscript
 private function formatUrl(url:String):String
@@ -19,7 +19,7 @@ In the context of this guide a `bucket` is a synonymous to your Firebase project
 
 ## Firebase Rules
 
-The Firebase Rules are a flexible way to set permissions on who can access certain data.
+The Firebase Rules are a flexible way to set permissions on who can access certain files and data.
 
 By default all the data is private and can only be accessed by Authenticated users.
 
@@ -72,7 +72,7 @@ service firebase.storage {
 }
 ```
 
-These rules will allow anyone to read the contents of a folder named `public`.
+The following rules will allow anyone to read but not to write the contents of a folder named `public`.
 
 ```
 service firebase.storage {
@@ -88,7 +88,7 @@ service firebase.storage {
 
 To upload a file you require to send it as a `ByteArray`. The following snippets show the most common scenarios.
 
-All of the following examples use the following `Event.COMPLETE` and `IOErrorEvent.IOERROR` listeners.
+All of the examples use the following `Event.COMPLETE` and `IOErrorEvent.IOERROR` listeners.
 
 ```actionscript
 private function uploadComplete(event:flash.events.Event):void
@@ -152,7 +152,7 @@ A successful response will look like the following JSON structure:
 }
 ```
 
-Your new file and `savegames` folder will instantly appear in the Storage section from the Firebase console.
+Your new file and a `savegames` folder will instantly appear in the Storage section from the Firebase console.
 
 The download link for this specific file would be:
 
@@ -162,7 +162,7 @@ The metadata link for this specific file would be:
 
 `https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data`
 
-Notice that you need to provide the `?alt=media` parameter in order to download the actual file.
+Note that you need to provide the `?alt=media` parameter in order to download the actual file.
 
 You will also need to replace all the `/` for `%2F` after the bucket name. Otherwise it will return an error.
 
@@ -343,7 +343,7 @@ service firebase.storage {
 }
 ```
 
-The following snippet requires that you already have an `idToken` and a `localId`. You can obtain those after a successful Log In or Sign Up. For more information you can read the [Firebase Auth guide](./../auth).
+The following snippet requires that you already have a valid `idToken` and a `localId`. You can obtain those after a successful `Refresh Token` request. For more information you can read the [Firebase Auth guide](./../auth).
 
 ```actionscript
 private function uploadPersonalFile(idToken:String, localId:String):void
@@ -358,7 +358,7 @@ private function uploadPersonalFile(idToken:String, localId:String):void
 				
     var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+idToken);			
 				
-    var request:URLRequest = new URLRequest(FIREBASE_STORAGE_URL+"savegames%2F"+localId+"%2Fsavegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+localId+"%2Fsavegame.data");
     request.method = URLRequestMethod.POST;
     request.data = bytes;
     request.contentType = "text/plain";
