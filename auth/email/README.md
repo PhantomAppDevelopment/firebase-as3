@@ -5,7 +5,7 @@ Firebase provides 2 options when you require a way for your users to log in into
 * Email/Password Auth
 * Anonymous Auth
 
-Firebase also uses the Google Identity Toolkit to achieve this.
+Email and Anonymous Auth also uses the Google Identity Toolkit to achieve this.
 
 ## Getting Started
 
@@ -78,7 +78,7 @@ The user will be automatically registered in the Auth section from your Firebase
 
 For an Anonymous approach you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
 
-Make sure to save this response inside the app so you can use it later to perform Auth requests and account managing.
+The `idToken` received from this response does work for `auth` requests.
 
 ## Verifying Credentials (Sign In)
 
@@ -124,6 +124,8 @@ A successful response will look like the following JSON structure:
 ```
 
 Note that failing to enter the correct password 3 times in a row will block the IP for future login attempts for a while.
+
+The `idToken` received from this response doesn't work for `auth` requests. You must refresh the `idToken` to get a functional one (see bottom of this guide).
 
 ## Password Reset
 
@@ -219,7 +221,7 @@ A successful response will look like the following JSON structure:
 
 An email with instructions will be sent to the desired email address. You can customize the template of emails in the Auth section from the Firebase console.
 
-## Get Account info
+## Get Account Info
 
 This method is used for retrieving the logged in user information, very useful to check if a user has confirmed their Email Address.
 
@@ -381,5 +383,56 @@ A successful response will look like the following JSON structure:
 ```json
 {
     "kind": "identitytoolkit#DeleteAccountResponse"
+}
+```
+
+## Refreshing the idToken
+
+By default the `idToken` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
+To refresh an `idToken` you will only need to provide the previous one and specify the `grant_type` as `"authorization_code"`.
+
+```actionscript
+private function refreshToken(idToken:String):void
+{
+	var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+			
+	var myObject:Object = new Object();
+	myObject.grant_type = "authorization_code";
+	myObject.code = idToken;			
+			
+	var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
+	request.method = URLRequestMethod.POST;
+	request.data = JSON.stringify(myObject);
+	request.requestHeaders.push(header);
+			
+	var loader:URLLoader = new URLLoader();
+	loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+	loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+	loader.load(request);	
+}
+		
+private function refreshTokenLoaded(event:flash.events.Event):void
+{
+    var rawData:Object = JSON.parse(event.currentTarget.data);
+    var newIdToken:String = rawData.access_token;
+}
+
+private function errorHandler(event:flash.events.IOErrorEvent):void
+{
+	trace(event.currentTarget.data);
+}
+``` 
+
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "access_token": "<A long String>",
+    "expires_in": "3600",
+    "token_type": "Bearer",
+    "refresh_token": "<A long String>",
+    "id_token": "<A long String>",
+    "user_id": "ZJ7ud0CEpHYPF6QFWRGTe1U1Gvy2",
+    "project_id": "545203846422"
 }
 ```

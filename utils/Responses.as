@@ -6,7 +6,7 @@ package
 	These responses have been taken from the Firebase 3.4.0 JavaScript SDK.
 	The response strings have been modified for clearer readibility.
 	
-	To use this class, you need to convert a Firebase JSON response itno an AS3 Object using the JSON.parse() method
+	To use this class, you need to convert a Firebase JSON response into an AS3 Object using the JSON.parse() method
 	
 	var response:Object = JSON.parse(event.currentTarget.data);	
 	Alert.show(Responses[response.error.message], "Error");
@@ -35,7 +35,7 @@ package
 		Responses["INVALID_ID_TOKEN"] = "Invalid User Token";
 		Responses["TOKEN_EXPIRED"] = "User Token Expired";
 		Responses["USER_NOT_FOUND"] = "User Token Expired";
-		Responses["CORS_UNSUPPORTED"] = "cors-unsupported";
+		Responses["CORS_UNSUPPORTED"] = "Cross-Origin Resource Sharing Unsupported";
 		Responses["TOO_MANY_ATTEMPTS_TRY_LATER"] = "Too Many Attempts, Try Later";
 		Responses["WEAK_PASSWORD"] = "Weak Password";
 		Responses["OPERATION_NOT_ALLOWED"] = "Operation Not Allowed";

@@ -201,10 +201,12 @@ Note that not all providers return the same information, for example Twitter doe
 
 Once you have the profile information you might want to save it on an Object that can be globally accessed, you will need it when performing Auth requests against Firebase Database and Firebase Storage.
 
+The `idToken` you receive from this response doesn't work with `auth` requests. You must exchange it for a new one using the next method.
+
 ## Refreshing the idToken
 
 By default the `idToken` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To refresh an `idToken` you will only need to provide the previous one and specify the `grant_type` as `"authorization_code`.
+To refresh an `idToken` you will only need to provide the previous one and specify the `grant_type` as `"authorization_code"`.
 
 ```actionscript
 private function refreshToken(idToken:String):void
@@ -238,6 +240,19 @@ private function errorHandler(event:flash.events.IOErrorEvent):void
 }
 ``` 
 
+A successful response will look like the following JSON structure:
+
+```json
+{
+    "access_token": "<A long String>",
+    "expires_in": "3600",
+    "token_type": "Bearer",
+    "refresh_token": "<A long String>",
+    "id_token": "<A long String>",
+    "user_id": "ZJ7ud0CEpHYPF6QFWRGTe1U1Gvy2",
+    "project_id": "545203846422"
+}
+```
+
 Once you have got the `access_token` you are ready to continue performing secure operations against the Firebase Database and Firebase Storage.
 
-This method applies to both Federated and non Fedarated logins.

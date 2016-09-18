@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="800" minHeight="600">
+	<fx:Script>
+		<![CDATA[			
+			import mx.events.FlexEvent;
+			
+			import spark.components.Alert;
+			
+			private static const FIREBASE_API_KEY:String = "";
+			private static const CHATROOM_URL:String = "<YOUR-PROJECT-ID>.firebaseio.com/messages";
+			
+			private var messagesStream:URLStream;
+			private var profile:Object;
+			
+			private function goRegisterState():void
+			{
+				this.currentState = "RegisterState";
+			}
+			
+			private function cancelRegister():void
+			{
+				this.currentState = "LoginState";
+			}
+			
+			/*
+			Login Block
+			*/
+			protected function login():void
+			{
+				if(emailInput.text == "") {
+					Alert.show("Email is required", "Error");
+				} else if(passwordInput.text == "") {
+					Alert.show("Password is required", "Error");
+				} else {
+					var myObject:Object = new Object();
+					myObject.email = emailInput.text;
+					myObject.password = passwordInput.text;
+					
+					var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+					
+					var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key="+FIREBASE_API_KEY);
+					request.method = URLRequestMethod.POST;
+					request.data = JSON.stringify(myObject);
+					request.requestHeaders.push(header);
+					
+					var loader:URLLoader = new URLLoader();	
+					loader.addEventListener(flash.events.Event.COMPLETE, loginComplete);
+					loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+					loader.load(request);
+				}								
+			}
+			
+			private function loginComplete(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile = rawData;
+				refreshToken(profile.idToken);
+			}
+			
+			/*
+			Register Block
+			*/			
+			private function register():void
+			{
+				if(usernameInput.text == "") {
+					Alert.show("Username is required", "Error");
+				} else if(registerEmailInput.text == "") {
+					Alert.show("Email is required", "Error");
+				} else if(registerPasswordInput.text == "") {
+					Alert.show("Password is required", "Error");
+				} else {					
+					var myObject:Object = new Object();
+					myObject.displayName = usernameInput.text;
+					myObject.email = registerEmailInput.text;
+					myObject.password = registerPasswordInput.text;
+					
+					var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+					
+					var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key="+FIREBASE_API_KEY);
+					request.method = URLRequestMethod.POST;
+					request.data = JSON.stringify(myObject);
+					request.requestHeaders.push(header);
+					
+					var loader:URLLoader = new URLLoader();	
+					loader.addEventListener(flash.events.Event.COMPLETE, registerComplete);
+					loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+					loader.load(request);
+				}
+			}			
+			
+			private function registerComplete(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile = rawData;
+				currentState = "ChatState";
+			}
+			
+			/*
+			Refresh token Block
+			*/			
+			private function refreshToken(idToken:String):void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.grant_type = "authorization_code";
+				myObject.code = idToken;            
+				
+				var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);   
+			}
+			
+			private function refreshTokenLoaded(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile.idToken = rawData.access_token;
+				this.currentState = "ChatState";
+			}
+			
+			/*
+			Realtime Block
+			*/
+			private function loadRealtime():void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("Accept", "text/event-stream");
+				var request:URLRequest = new URLRequest(CHATROOM_URL+'.json?auth='+profile.idToken);
+				request.requestHeaders.push(header);
+				
+				messagesStream = new URLStream();
+				messagesStream.addEventListener(ProgressEvent.PROGRESS, progress);
+				messagesStream.load(request);
+			}
+			
+			private function progress(event:ProgressEvent):void
+			{				
+				//We are continously listening responses and response codes
+				
+				var message:String = messagesStream.readUTFBytes(messagesStream.bytesAvailable);
+				trace(message);
+				
+				//If a message contains the null value it means nothing happened and we skip it
+				
+				if(message.indexOf("null") == -1)
+				{			
+					//Otherwise we take the JSON part of the response and convert it into an Object
+					message = message.substr(message.indexOf("data:")+6, message.length);
+					
+					var rawData:Object = JSON.parse(message);
+					
+					//The first time we connect to the database it will return saved messages in a different structure
+					//Even if we requested the data sorted by timestamp, the JSON parser scrambles it, so we have to put it in an Array
+					
+					var tempArray:Array = new Array();
+					
+					for each(var item:Object in rawData.data){
+						if(item.hasOwnProperty("message")){
+							tempArray.push(item);
+						}					
+					}
+					
+					//We sort our data by timestamp so it shows the most recent messages at the bottom, like in all messaging apps
+					tempArray.sortOn("timestamp");
+					var tempDate:Date;
+					
+					for(var i:uint = 0; i<tempArray.length; i++)
+					{
+						//We add the contents of the sorted array to the dataprovider						
+						tempDate = new Date(Number(tempArray[i].timestamp));
+						chatArea.htmlText += "<b>"+tempDate.toLocaleTimeString() + " - " + tempArray[i].senderName+"</b>: ";
+						chatArea.htmlText += tempArray[i].message+"\n";
+						chatArea.validateNow();
+						chatArea.verticalScrollPosition = chatArea.maxVerticalScrollPosition;
+						tempDate = null;
+					}
+					
+					//For the individual messages the structure is more simple, we just make sure it contains a message
+					if(Object(rawData.data).hasOwnProperty("message"))
+					{
+						tempDate = new Date(Number(rawData.data["timestamp"]));
+						chatArea.htmlText += "<b>"+tempDate.toLocaleTimeString() + " - " + rawData.data["senderName"]+"</b>: ";
+						chatArea.htmlText += rawData.data["message"]+"\n";
+						chatArea.validateNow();
+						chatArea.verticalScrollPosition = chatArea.maxVerticalScrollPosition;
+						tempDate = null;
+					}
+										
+					//Clean up
+					tempArray = null;
+					rawData = null;
+					message = null;
+					
+				}
+			}
+			
+			/*
+			Send Message block
+			*/			
+			private function sendMessage():void
+			{
+				if(messageInput.text != "")
+				{
+					var myObject:Object = new Object();
+					myObject.message = messageInput.text;
+					myObject.senderId = profile.localId;
+					myObject.senderName = profile.displayName;
+					myObject.timestamp = new Date().getTime();
+					
+					var request:URLRequest = new URLRequest(CHATROOM_URL+".json?auth="+profile.idToken);
+					request.data = JSON.stringify(myObject);
+					request.method = URLRequestMethod.POST;
+					
+					var loader:URLLoader = new URLLoader();
+					loader.addEventListener(flash.events.Event.COMPLETE, messageSent);
+					loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+					loader.load(request);
+				}
+			}
+			
+			private function messageSent(event:flash.events.Event):void
+			{
+				trace(event.currentTarget.data);
+				messageInput.text = "";
+			}
+									
+			/*
+			Universal Error Handler
+			*/			
+			private function errorHandler(event:flash.events.IOErrorEvent):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				Alert.show(Responses[rawData.error.message], "Error");
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="LoginState"/>
+		<s:State name="RegisterState"/>
+		<s:State name="ChatState" enterState="loadRealtime()"/>
+	</s:states>
+	
+	<s:Panel includeIn="LoginState" title="Chat Login" width="200" height="200" verticalCenter="0" horizontalCenter="0">
+		<s:VGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" gap="10">
+			<s:Label text="Email Address:" width="150"/>
+			<s:TextInput id="emailInput" prompt="Type your Email Address" width="150"/>
+			<s:Label text="Password:" width="150"/>
+			<s:TextInput id="passwordInput" prompt="Type your Password" displayAsPassword="true" width="150"/>
+			<s:HGroup>
+				<s:Button label="Register" width="50%" click="goRegisterState()"/>
+				<s:Button label="Login" width="50%" click="login()"/>
+			</s:HGroup>		
+		</s:VGroup>
+	</s:Panel>
+	
+	<s:Panel includeIn="RegisterState" title="Register" width="200" height="250" verticalCenter="0" horizontalCenter="0">
+		<s:VGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" gap="10">
+			<s:Label text="Username:" width="150"/>
+			<s:TextInput id="usernameInput" prompt="Type a derired Username" width="150"/>
+			<s:Label text="Email Address:" width="150"/>
+			<s:TextInput id="registerEmailInput" prompt="Type an Email Address" width="150"/>
+			<s:Label text="Password:" width="150"/>
+			<s:TextInput id="registerPasswordInput" prompt="Type a Password" displayAsPassword="true" width="150"/>
+			<s:HGroup>
+				<s:Button label="Cancel" width="50%" click="cancelRegister()"/>
+				<s:Button label="Register" width="50%" click="register()"/>
+			</s:HGroup>		
+		</s:VGroup>
+	</s:Panel>
+	
+	<s:Panel includeIn="ChatState" left="10" right="10" top="10" bottom="10" title="Chat Room">
+		<mx:TextArea id="chatArea" top="10" left="10" right="10" bottom="40" editable="false"/>
+		
+		<s:HGroup left="10" right="10" bottom="10">
+			<s:TextInput id="messageInput" prompt="Type your message here." enter="sendMessage()" width="100%"/>
+			<s:Button label="Send" click="sendMessage()"/>
+		</s:HGroup>		
+	</s:Panel>
+	
+</s:WindowedApplication>

@@ -4,8 +4,6 @@ Firebase offers a very flexible and secure way to save text-based data.
 
 This guide will show some of the most common scenarios and it will explain how to use Rules for your database. It is also written from an ActionScript and SQL perspective.
 
-A simple `CRUD` [example](./examples) has been provided for your convenience, it only requires a recent version of `Apache Flex` to compile.
-
 ## Understanding the Data
 
 The data saved in the Firebase database is structured like a tree. Each 'branch' can have its own branches and those sub branches can have their own sub branches.
@@ -358,6 +356,6 @@ private function journalLoaded(event:flash.events.Event):void
 }
 ```
 
-The `localId` and `auth` values can be obtained after a successful Sign In or Sign Up request.
+The `localId` and `auth` values can be obtained after a successful operation with the `Firebase Auth` service.
 
 For more information on these values you can read the [Firebase Auth guide](./../auth/).

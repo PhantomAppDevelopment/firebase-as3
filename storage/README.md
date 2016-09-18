@@ -392,4 +392,4 @@ A successful response will look like the following JSON structure:
 }
 ```
 
-You will notice that the `localId` has been added to the name.
+You will notice that the `localId` value has been added to the name.
