@@ -9,7 +9,7 @@
 			import spark.components.Alert;
 			
 			private static const FIREBASE_API_KEY:String = "";
-			private static const CHATROOM_URL:String = "<YOUR-PROJECT-ID>.firebaseio.com/messages";
+			private static const CHATROOM_URL:String = "https://<YOUR-PROJECT-ID>.firebaseio.com/messages";
 			
 			private var messagesStream:URLStream;
 			private var profile:Object;
@@ -264,7 +264,7 @@
 	<s:Panel includeIn="RegisterState" title="Register" width="200" height="250" verticalCenter="0" horizontalCenter="0">
 		<s:VGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" gap="10">
 			<s:Label text="Username:" width="150"/>
-			<s:TextInput id="usernameInput" prompt="Type a derired Username" width="150"/>
+			<s:TextInput id="usernameInput" prompt="Type a desired Username" width="150"/>
 			<s:Label text="Email Address:" width="150"/>
 			<s:TextInput id="registerEmailInput" prompt="Type an Email Address" width="150"/>
 			<s:Label text="Password:" width="150"/>

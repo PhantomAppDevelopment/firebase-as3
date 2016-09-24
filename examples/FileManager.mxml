@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="800" minHeight="600">
+	<fx:Script>
+		<![CDATA[			
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Alert;
+			import spark.events.GridSelectionEvent;
+			
+			private static const FIREBASE_API_KEY:String = "";
+			private static const IMAGES_URL:String = "https://<YOUR-PROJECT-ID>.firebaseio.com/images";
+			private static const STORAGE_URL:String = "https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/";
+			
+			private var alert:Alert;
+			private var fileRef:FileReference;
+			private var profile:Object;
+			
+			private function goRegisterState():void
+			{
+				this.currentState = "RegisterState";
+			}
+			
+			private function cancelRegister():void
+			{
+				this.currentState = "LoginState";
+			}
+			
+			protected function selectItem(event:GridSelectionEvent):void
+			{
+				downloadBtn.enabled = true;
+				deleteBtn.enabled = true;
+			}
+			
+			/*
+			Login Block
+			*/
+			protected function login():void
+			{
+				if(emailInput.text == "") {
+					Alert.show("Email is required", "Error");
+				} else if(passwordInput.text == "") {
+					Alert.show("Password is required", "Error");
+				} else {
+					var myObject:Object = new Object();
+					myObject.email = emailInput.text;
+					myObject.password = passwordInput.text;
+					
+					var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+					
+					var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyPassword?key="+FIREBASE_API_KEY);
+					request.method = URLRequestMethod.POST;
+					request.data = JSON.stringify(myObject);
+					request.requestHeaders.push(header);
+					
+					var loader:URLLoader = new URLLoader();	
+					loader.addEventListener(flash.events.Event.COMPLETE, loginComplete);
+					loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+					loader.load(request);
+				}								
+			}
+			
+			private function loginComplete(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile = rawData;
+				refreshToken(profile.idToken);
+			}
+			
+			/*
+			Register Block
+			*/			
+			private function register():void
+			{
+				if(registerEmailInput.text == "") {
+					Alert.show("Email is required", "Error");
+				} else if(registerPasswordInput.text == "") {
+					Alert.show("Password is required", "Error");
+				} else {					
+					var myObject:Object = new Object();
+					myObject.email = registerEmailInput.text;
+					myObject.password = registerPasswordInput.text;
+					
+					var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+					
+					var request:URLRequest = new URLRequest("https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key="+FIREBASE_API_KEY);
+					request.method = URLRequestMethod.POST;
+					request.data = JSON.stringify(myObject);
+					request.requestHeaders.push(header);
+					
+					var loader:URLLoader = new URLLoader();	
+					loader.addEventListener(flash.events.Event.COMPLETE, registerComplete);
+					loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+					loader.load(request);
+				}
+			}			
+			
+			private function registerComplete(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile = rawData;
+				currentState = "ManagerState";
+			}
+			
+			/*
+			Refresh Token Block
+			*/			
+			private function refreshToken(idToken:String):void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.grant_type = "authorization_code";
+				myObject.code = idToken;            
+				
+				var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);   
+			}
+			
+			private function refreshTokenLoaded(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile.idToken = rawData.access_token;
+				this.currentState = "ManagerState";
+			}
+			
+			/*
+			Load Files Block
+			*/
+			protected function loadFiles():void
+			{
+				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+".json?auth="+profile.idToken);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, filesLoaded);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);
+			}
+			
+			private function filesLoaded(event:flash.events.Event):void
+			{
+				event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, filesLoaded);
+				
+				//The JSON generated by Firebase contains the id as the node key, we use this function to add it to our Objects
+				var rawData:Object = JSON.parse(event.currentTarget.data);			
+				var entriesArray:Array = new Array();
+				
+				for (var parent:String in rawData)
+				{
+					var tempObject:Object = new Object();
+					tempObject.id = parent;
+					
+					for (var child:* in rawData[parent])
+					{
+						tempObject[child] = rawData[parent][child];
+					}
+					
+					entriesArray.push(tempObject);
+					tempObject = null;
+				}
+				
+				filesGrid.dataProvider = new ArrayList(entriesArray);
+				downloadBtn.enabled = false;
+				deleteBtn.enabled = false;
+			}			
+			
+			/*
+			Upload File Block
+			*/
+			private function uploadFile():void
+			{				
+				fileRef = new FileReference();
+				fileRef.addEventListener(Event.SELECT, selectHandler);
+				fileRef.addEventListener(Event.COMPLETE, completeHandler);
+				
+				var formatsArray:Array = [];
+				formatsArray.push(new FileFilter("Images", ".gif;*.jpeg;*.jpg;*.png"));
+				fileRef.browse(formatsArray);
+			}
+			
+			private function selectHandler(event:Event):void
+			{
+				fileRef.load();
+			}
+			
+			private function completeHandler(event:Event):void
+			{				
+				var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.idToken);         
+				
+				var request:URLRequest = new URLRequest(STORAGE_URL+"images%2F"+profile.localId+"%2F"+fileRef.name);
+				request.method = URLRequestMethod.POST;
+				request.data = fileRef.data;
+				request.contentType = getMimeType(fileRef.extension);
+				request.requestHeaders.push(header);
+								
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, uploadComplete);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);
+				
+				alert = Alert.show("Uploading File, Please Wait...", "Uploading");
+			}
+			
+			private function uploadComplete(event:flash.events.Event):void
+			{
+				PopUpManager.removePopUp(alert);				
+				
+				//The file has been successfully uploaded, we now createa a reference of it into the Database				
+				var rawData:Object = JSON.parse(event.currentTarget.data);				
+				var myObject:Object = new Object();
+				
+				for(var key:String in rawData)
+				{
+					myObject[key] = rawData[key];
+				}
+				
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				var header2:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "PATCH");			
+				
+				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+"/"+rawData.generation+".json?auth="+profile.idToken);
+				request.data = JSON.stringify(myObject);
+				request.method = URLRequestMethod.POST;
+				request.requestHeaders.push(header);
+				request.requestHeaders.push(header2);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, databaseUpdated);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);
+			}
+			
+			private function databaseUpdated(event:flash.events.Event):void
+			{
+				loadFiles();
+			}
+			
+			/*
+			Download Image Blcok
+			*/
+			private function downloadImage():void
+			{
+				//Hardcoded for this specific example
+				var tempArray:Array = String(filesGrid.selectedItem.name).split("/");				
+				var tempName:String = tempArray[2];	
+				
+				var request:URLRequest = new URLRequest(STORAGE_URL+formatUrl(filesGrid.selectedItem.name)+"?alt=media&token="+filesGrid.selectedItem.downloadTokens);
+				
+				var tempFileRef:FileReference = new FileReference();
+				tempFileRef.download(request, tempName);				
+			}
+			
+			/*
+			Delete Blcok
+			*/			
+			protected function deleteImage():void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");         
+				var header2:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.idToken);         
+				
+				var request:URLRequest = new URLRequest(STORAGE_URL+formatUrl(filesGrid.selectedItem.name));
+				trace(request.url);
+				request.method = URLRequestMethod.POST;
+				request.requestHeaders.push(header);
+				request.requestHeaders.push(header2);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, deleteComplete);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);
+			}
+			
+			private function deleteComplete(event:flash.events.Event):void
+			{
+				//The file has been deleted from Storage, now we delete it from the Database.
+				var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");         
+				
+				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+"/"+filesGrid.selectedItem.generation+".json?auth="+profile.idToken);
+				request.method = URLRequestMethod.POST;
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, entryDeleted);
+				loader.load(request);			
+			}
+			
+			private function entryDeleted(event:flash.events.Event):void
+			{
+				loadFiles();
+			}						
+			
+			/*
+			Helper Functions Block
+			*/			
+			private function formatUrl(url:String):String
+			{
+				return url.replace(/\//g, "%2F");
+			}
+			
+			private function getMimeType(fileType:String):String
+			{
+				switch(fileType)
+				{
+					case "jpg":
+						return "image/jpeg";
+						break;
+					case "png":
+						return "image/png";
+						break;
+					case "gif":
+						return "image/gif";
+						break;
+					default:
+						return "image/jpeg";
+				}
+			}
+			
+			private function nameFunction(item:Object, column:GridColumn):String
+			{
+				//Hardcoded for this specific example
+				var tempArray:Array = String(item.name).split("/");				
+				return tempArray[2];				
+			}
+			
+			private function sizeFunction(item:Object, column:GridColumn):String
+			{
+				if(int(item.size) >= 1000000){
+					return int((item.size/1000000)*100)/100 + " MB";
+				} else {
+					return int((item.size/1000)*100)/100 + " KB";	
+				}				
+			}				
+						
+			/*
+			Universal Error Handler
+			*/			
+			private function errorHandler(event:flash.events.IOErrorEvent):void
+			{
+				trace(event.currentTarget.data);
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				Alert.show(Responses[rawData.error.message], "Error");
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="LoginState"/>
+		<s:State name="RegisterState"/>
+		<s:State name="ManagerState" enterState="loadFiles()"/>
+	</s:states>
+	
+	<s:Panel includeIn="LoginState" title="Chat Login" width="200" height="200" verticalCenter="0" horizontalCenter="0">
+		<s:VGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" gap="10">
+			<s:Label text="Email Address:" width="150"/>
+			<s:TextInput id="emailInput" prompt="Type your Email Address" width="150"/>
+			<s:Label text="Password:" width="150"/>
+			<s:TextInput id="passwordInput" prompt="Type your Password" displayAsPassword="true" width="150"/>
+			<s:HGroup>
+				<s:Button label="Register" width="50%" click="goRegisterState()"/>
+				<s:Button label="Login" width="50%" click="login()"/>
+			</s:HGroup>		
+		</s:VGroup>
+	</s:Panel>
+	
+	<s:Panel includeIn="RegisterState" title="Register" width="200" height="200" verticalCenter="0" horizontalCenter="0">
+		<s:VGroup width="100%" height="100%" verticalAlign="middle" horizontalAlign="center" gap="10">
+			<s:Label text="Email Address:" width="150"/>
+			<s:TextInput id="registerEmailInput" prompt="Type an Email Address" width="150"/>
+			<s:Label text="Password:" width="150"/>
+			<s:TextInput id="registerPasswordInput" prompt="Type a Password" displayAsPassword="true" width="150"/>
+			<s:HGroup>
+				<s:Button label="Cancel" width="50%" click="cancelRegister()"/>
+				<s:Button label="Register" width="50%" click="register()"/>
+			</s:HGroup>		
+		</s:VGroup>
+	</s:Panel>
+	
+	<s:Panel includeIn="ManagerState" left="10" right="10" top="10" bottom="10" title="File Manager">
+		<s:DataGrid id="filesGrid" width="100%" height="100%" selectionChange="selectItem(event)">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn headerText="Name" labelFunction="nameFunction" />
+					<s:GridColumn headerText="Type" dataField="contentType" />
+					<s:GridColumn headerText="Size" labelFunction="sizeFunction" />
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		
+		<s:HGroup left="10" right="10" bottom="10" horizontalAlign="center">
+			<s:Button id="deleteBtn" label="Delete Image" click="deleteImage()"/>
+			<s:Button id="downloadBtn" label="Download Image" click="downloadImage()"/>
+			<s:Button label="Browse and Upload" click="uploadFile()"/>
+		</s:HGroup>		
+	</s:Panel>
+	
+</s:WindowedApplication>
