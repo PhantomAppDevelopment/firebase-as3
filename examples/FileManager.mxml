@@ -17,6 +17,7 @@
 			private var alert:Alert;
 			private var fileRef:FileReference;
 			private var profile:Object;
+			private var authToken:String;
 			
 			private function goRegisterState():void
 			{
@@ -101,6 +102,7 @@
 			{
 				var rawData:Object = JSON.parse(event.currentTarget.data);
 				profile = rawData;
+				authToken = rawData.idToken;
 				currentState = "ManagerState";
 			}
 			
@@ -129,7 +131,7 @@
 			private function refreshTokenLoaded(event:flash.events.Event):void
 			{
 				var rawData:Object = JSON.parse(event.currentTarget.data);
-				profile.idToken = rawData.access_token;
+				authToken = rawData.access_token;
 				this.currentState = "ManagerState";
 			}
 			
@@ -138,7 +140,7 @@
 			*/
 			protected function loadFiles():void
 			{
-				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+".json?auth="+profile.idToken);
+				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+".json?auth="+authToken);
 				
 				var loader:URLLoader = new URLLoader();
 				loader.addEventListener(flash.events.Event.COMPLETE, filesLoaded);
@@ -194,7 +196,7 @@
 			
 			private function completeHandler(event:Event):void
 			{				
-				var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.idToken);         
+				var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);         
 				
 				var request:URLRequest = new URLRequest(STORAGE_URL+"images%2F"+profile.localId+"%2F"+fileRef.name);
 				request.method = URLRequestMethod.POST;
@@ -226,7 +228,7 @@
 				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				var header2:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "PATCH");			
 				
-				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+"/"+rawData.generation+".json?auth="+profile.idToken);
+				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+"/"+rawData.generation+".json?auth="+authToken);
 				request.data = JSON.stringify(myObject);
 				request.method = URLRequestMethod.POST;
 				request.requestHeaders.push(header);
@@ -264,7 +266,7 @@
 			protected function deleteImage():void
 			{
 				var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");         
-				var header2:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.idToken);         
+				var header2:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);         
 				
 				var request:URLRequest = new URLRequest(STORAGE_URL+formatUrl(filesGrid.selectedItem.name));
 				trace(request.url);
@@ -283,7 +285,7 @@
 				//The file has been deleted from Storage, now we delete it from the Database.
 				var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");         
 				
-				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+"/"+filesGrid.selectedItem.generation+".json?auth="+profile.idToken);
+				var request:URLRequest = new URLRequest(IMAGES_URL+"/"+profile.localId+"/"+filesGrid.selectedItem.generation+".json?auth="+authToken);
 				request.method = URLRequestMethod.POST;
 				request.requestHeaders.push(header);
 				

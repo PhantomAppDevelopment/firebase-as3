@@ -108,11 +108,11 @@ The `auth.uid` parameter means the following:
 
 An Authentication Token is an encoded string that contains information about the user that is trying to perform an operation against the database.
 
-There are several ways to generate these tokens, this guide will only explain how to do it using Google Identity Toolkit so you won't require to do Crytographic wizardy.
+There are several ways to generate these tokens, this guide will only explain how to do it using Google Identity Toolkit so you won't require to do Cryptographic wizardy.
 
-For more detailed information on how to generate and manage an `idToken` please consult the [auth guide](/../auth).
+For more detailed information on how to generate and manage an `authToken` please consult the [Firebase Auth guide](/../auth).
 
-Once you have got a fresh `idToken` you are ready to perform secure operations against the Firebase Database and Firebase Storage.
+Once you have got a fresh `authToken` you are ready to perform secure operations against the Firebase Database and Firebase Storage.
 
 ## Reading the Database
 
@@ -142,9 +142,9 @@ A simple GET request (the default for `URLRequest`) is enough. Remember to alway
 To load a Private resource use the following code:
 
 ```actionscript
-private function loadSpecialOffers(idToken:String):void
+private function loadSpecialOffers(authToken:String):void
 {
-    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/specialoffers.json?auth="+idToken);
+    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/specialoffers.json?auth="+authToken);
 			
     var loader:URLLoader = new URLLoader();
     loader.addEventListener(flash.events.Event.COMPLETE, offersLoaded);
@@ -192,7 +192,7 @@ We used a `ProgressEvent.PROGRESS` instead of the usual `Event.COMPLETE`. Everyt
 
 Remember to remove the event listener once you have finished working with the realtime data or it will continue listening to it.
 
-Auth works exactly the same as with non-realtime data, you only need to provide the `auth` parameter with a valid `idToken` in the URL.
+Auth works exactly the same as with non-realtime data, you only need to provide the `auth` parameter with a valid `authToken` in the URL.
 
 ## Modyfing the Database
 
@@ -337,12 +337,12 @@ For example, we want that each user has their independent journal that they can 
 }
 ```
 
-When you want to modify or read their journal you need to specify the users's `localId` (known as `uid` inside the rules)  and `idToken` as part of the URL.
+When you want to modify or read their journal you need to specify the users's `localId` (known as `uid` inside the rules)  and `authToken` as part of the URL.
 
 ```actionscript
-private function loadPrivateJournal(localId:String, idToken:String):void
+private function loadPrivateJournal(localId:String, authToken:String):void
 {
-    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/journals/"+localId+".json?auth="+idToken);
+    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/journals/"+localId+".json?auth="+authToken);
 			
     var loader:URLLoader = new URLLoader();
     loader.addEventListener(flash.events.Event.COMPLETE, journalLoaded);
@@ -356,6 +356,8 @@ private function journalLoaded(event:flash.events.Event):void
 }
 ```
 
-The `localId` and `auth` values can be obtained after a successful operation with the `Firebase Auth` service.
+The `localId` can be obtained after a successful `Sign In`, `Sign Up` or `Get Account Info` request.
+
+The `auth` value can be obtained after a successful `Refresh Token` request.
 
 For more information on these values you can read the [Firebase Auth guide](./../auth/).

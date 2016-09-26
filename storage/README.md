@@ -158,10 +158,10 @@ The `contentType` doesn't need to be accurate, but it is recommended to set it p
 
 ### Uploading with Auth
 
-Authorizing requests for Firebase Storage is a bit different than in Firebase Database. Instead of adding an `auth` parameter in the URL with the `idToken`, we add it into an `URLRequestHeader`.
+Authorizing requests for Firebase Storage is a bit different than in Firebase Database. Instead of adding an `auth` parameter in the URL with the `authToken`, we add it into an `URLRequestHeader`.
 
 ```actionscript
-private function uploadFile(idToken:String):void
+private function uploadFile(authToken:String):void
 {
     var file:File = File.applicationStorageDirectory.resolvePath("savegame.data");
 				
@@ -171,7 +171,7 @@ private function uploadFile(idToken:String):void
     fileStream.readBytes(bytes);
     fileStream.close();
     
-    var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+idToken);			
+    var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);			
 
     var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
@@ -236,10 +236,10 @@ A successful response will return an [empty String](https://cloud.google.com/sto
 Use the following snippet if you want to delete the same file using authentication:
 
 ```actionscript
-private function deleteFile(idToken:String):void
+private function deleteFile(authToken:String):void
 {
     var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");			
-    var header2:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+idToken);			
+    var header2:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);			
 			
     var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data");
     request.method = URLRequestMethod.POST;
@@ -312,7 +312,7 @@ private function updateMetadata():void
 				
     var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "PATCH");			
     var header2:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
-    var header3:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.idToken);         
+    var header3:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.authToken);         
 		
     var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
@@ -404,9 +404,9 @@ private function metadataLoaded(event:flash.events.Event):void
 Use the following snippet to download the metadata of a `private` file:
 
 ```actionscript
-private function downloadMetadata(idToken:String):void
+private function downloadMetadata(authToken:String):void
 {
-    var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+idToken);         
+    var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);         
 				
     var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data");
     request.method = URLRequestMethod.POST;
@@ -452,10 +452,16 @@ service firebase.storage {
 }
 ```
 
-The following snippet requires that you already have a valid `idToken` and a `localId`. You can obtain those after a successful `Refresh Token` request. For more information you can read the [Firebase Auth guide](./../auth).
+The following snippet requires that you already have a valid `authToken` and a `localId`.
+
+The `localId` can be obtained after a successful `Sign In`, `Sign Up` or `Get Account Info` request.
+
+The `auth` value can be obtained after a successful `Refresh Token` request.
+
+For more information on these values you can read the [Firebase Auth guide](./../auth/).
 
 ```actionscript
-private function uploadPersonalFile(idToken:String, localId:String):void
+private function uploadPersonalFile(authToken:String, localId:String):void
 {
     var file:File = File.applicationStorageDirectory.resolvePath("savegame.data");
 				
@@ -465,7 +471,7 @@ private function uploadPersonalFile(idToken:String, localId:String):void
     fileStream.readBytes(bytes);
     fileStream.close();
 				
-    var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+idToken);			
+    var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);			
 				
     var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+localId+"%2Fsavegame.data");
     request.method = URLRequestMethod.POST;

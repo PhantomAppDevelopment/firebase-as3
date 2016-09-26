@@ -13,7 +13,8 @@
 			
 			private var messagesStream:URLStream;
 			private var profile:Object;
-			
+			private var authToken:String;
+
 			private function goRegisterState():void
 			{
 				this.currentState = "RegisterState";
@@ -94,6 +95,7 @@
 			{
 				var rawData:Object = JSON.parse(event.currentTarget.data);
 				profile = rawData;
+				authToken = rawData.idToken;
 				currentState = "ChatState";
 			}
 			
@@ -122,7 +124,7 @@
 			private function refreshTokenLoaded(event:flash.events.Event):void
 			{
 				var rawData:Object = JSON.parse(event.currentTarget.data);
-				profile.idToken = rawData.access_token;
+				authToken = rawData.access_token;
 				this.currentState = "ChatState";
 			}
 			
@@ -132,7 +134,7 @@
 			private function loadRealtime():void
 			{
 				var header:URLRequestHeader = new URLRequestHeader("Accept", "text/event-stream");
-				var request:URLRequest = new URLRequest(CHATROOM_URL+'.json?auth='+profile.idToken);
+				var request:URLRequest = new URLRequest(CHATROOM_URL+'.json?auth='+authToken);
 				request.requestHeaders.push(header);
 				
 				messagesStream = new URLStream();
@@ -214,7 +216,7 @@
 					myObject.senderName = profile.displayName;
 					myObject.timestamp = new Date().getTime();
 					
-					var request:URLRequest = new URLRequest(CHATROOM_URL+".json?auth="+profile.idToken);
+					var request:URLRequest = new URLRequest(CHATROOM_URL+".json?auth="+authToken);
 					request.data = JSON.stringify(myObject);
 					request.method = URLRequestMethod.POST;
 					

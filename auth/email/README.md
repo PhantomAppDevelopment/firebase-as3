@@ -78,7 +78,9 @@ The user will be automatically registered in the Auth section from your Firebase
 
 For an Anonymous approach you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
 
-The `idToken` received from this response does work for the Firebase Database, Firebase Storage and Firebase Auth requests.
+The `idToken` received from this response can be used as an `authToken` for the Firebase Database, Firebase Storage and Firebase Auth requests.
+
+Once this Sign Up token has expired you must refresh it (see bottom of this page).
 
 ## Verifying Credentials (Sign In)
 
@@ -125,8 +127,7 @@ A successful response will look like the following JSON structure:
 
 Note that failing to enter the correct password 3 times in a row will block the IP for future login attempts for a while.
 
-The `idToken` received from this response doesn't work for Firebase Databasae and Firebase Storage requests. You must refresh the `idToken` to get a functional one (see bottom of this guide).
-It does still work for Firebase Auth requests. 
+The `idToken` received from this response is used to perform further account management requests. It is also used to get an `access_token` for Auth requests. For more information see the bottom of this page.
 
 ## Password Reset
 
@@ -387,10 +388,10 @@ A successful response will look like the following JSON structure:
 }
 ```
 
-## Refreshing the idToken
+## Obtaining and Refreshing an Access Token
 
-By default the `idToken` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To refresh an `idToken` you will only need to provide the previous one and specify the `grant_type` as `"authorization_code"`.
+By default the `access_token` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
+To obtain or refresh an `access_token` you only need to provide the `idToken` from a Sign In or Verify Account request and specify the `grant_type` as `"authorization_code"`.
 
 ```actionscript
 private function refreshToken(idToken:String):void
@@ -415,7 +416,7 @@ private function refreshToken(idToken:String):void
 private function refreshTokenLoaded(event:flash.events.Event):void
 {
     var rawData:Object = JSON.parse(event.currentTarget.data);
-    var newIdToken:String = rawData.access_token;
+    var accessToken:String = rawData.access_token;
 }
 
 private function errorHandler(event:flash.events.IOErrorEvent):void
@@ -439,3 +440,5 @@ A successful response will look like the following JSON structure:
 ```
 
 Once you have got the `access_token` you are ready to perform secure operations against the Firebase Database and Firebase Storage services.
+
+In this guide and examples, the `access_token` and `authToken` represent the same value.

@@ -13,7 +13,7 @@ This service allows you to securely authenticate users into your app. It uses Go
 
 * Leverages the use of OAuth, saving time and effort.
 * Authenticate with `Facebook`, `Google`, `Twitter`, `Email`, `Anonymous` and more.
-* Generates an `idToken` that can be used for secure operations against Firebase Storage and Firebase Database.
+* Generates an `authToken` that can be used for secure operations against Firebase Storage and Firebase Database.
 
 ## Firebase Database
 *Main guide: [Firebase Database](./database)*
@@ -70,7 +70,7 @@ Free and open source!
 
 These guides are based on the JavaScript SDK and therefore have their same limitation of being web based only. If you need the rest of features that Firebase offers I strongly recommend using an ANE.
 
-### **Where did you got the documentation for Auth and Storage?**
+### **How did you got the documentation for Auth and Storage?**
 
 I studied the JavaScript SDK and its official documentation, then I determined the API paths, requests, results and errors. 
 

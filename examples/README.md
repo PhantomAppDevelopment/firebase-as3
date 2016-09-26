@@ -40,7 +40,8 @@ You will only require the following Database Rules:
 
 ## FileManager.mxml
 
-An Apache Flex example that demonstrates how to use Firebase Auth, Firebase Storage and Firebase Database to store and manage user images. Every user will have their own private folder where they will be able to upload, doanload and delete their images.
+An Apache Flex example that demonstrates how to use Firebase Auth, Firebase Storage and Firebase Database to store and manage user images.
+Every user will have their own private folder where they will be able to upload, download and delete their images.
 
 You will require the following Database Rules:
 

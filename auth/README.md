@@ -192,21 +192,19 @@ This information is formatted the same for all providers, the most important val
 Name | Description
 ---|---
 `localId`| A unique id assigned for the logged in user for your specific Firebase project. This is very useful when working with Firebase Database and Firebase Storage.
-`idToken`| An Authentication token that is used to identify the current logged in user. The `idToken` is heavily used in all Firebase features.
+`idToken`| An identity token that is used to identify the current logged in user. The `idToken` is used in further Auth requests such as exchanging it for an `access_token`.
 `displayName`| The logged in user full name (Google and Facebook) or their handler in Twitter.
 `photoUrl`| The logged in user avatar.
 `email`| The logged in user email address.
 
 Note that not all providers return the same information, for example Twitter doesn't return an Email Address.
 
-Once you have the profile information you might want to save it on an Object that can be globally accessed, you will need it when performing Auth requests against Firebase Database and Firebase Storage.
+Once you have the profile information you might want to save it on an Object that can be globally accessed, you might want to also save it to disk using a `SharedObject` or using the `FileStream` class.
 
-The `idToken` you receive from this response doesn't work with Firebase Database and Firebase Storage requests. You must exchange it for a new one using the next method. It still works for further Firebase Auth requests.
+## Obtaining and Refreshing an Access Token
 
-## Refreshing the idToken
-
-By default the `idToken` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To refresh an `idToken` you will only need to provide the previous one and specify the `grant_type` as `"authorization_code"`.
+By default the `access_token` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
+To obtain or refresh an `access_token` you only need to provide the `idToken` from a Sign In or Verify Account request and specify the `grant_type` as `"authorization_code"`.
 
 ```actionscript
 private function refreshToken(idToken:String):void
@@ -231,7 +229,7 @@ private function refreshToken(idToken:String):void
 private function refreshTokenLoaded(event:flash.events.Event):void
 {
     var rawData:Object = JSON.parse(event.currentTarget.data);
-    var newIdToken:String = rawData.access_token;
+    var accessToken:String = rawData.access_token;
 }
 
 private function errorHandler(event:flash.events.IOErrorEvent):void
@@ -256,3 +254,4 @@ A successful response will look like the following JSON structure:
 
 Once you have got the `access_token` you are ready to perform secure operations against the Firebase Database and Firebase Storage services.
 
+In this guide and examples, the `access_token` and `authToken` represent the same value.
