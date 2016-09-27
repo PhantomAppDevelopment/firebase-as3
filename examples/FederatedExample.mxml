@@ -52,7 +52,7 @@
 			{			
 				var location:String = webView.location;
 				
-				if(location.indexOf("/__/auth/handler?code=") != -1 || location.indexOf("/__/auth/handler?state=") != -1 || location.indexOf("/__/auth/handler#state=") != -1){
+				if(location.indexOf("/__/auth/handler?code=") != -1 || location.indexOf("/__/auth/handler?state=") != -1 || location.indexOf("/__/auth/handler#state=") != -1 && location.indexOf("error") == -1){
 					
 					//We are looking for a code parameter in the URL, once we have it we dispose the webview and prepare the last URLRequest	
 					webView.removeEventListener(LocationChangeEvent.LOCATION_CHANGE, changeLocation);
