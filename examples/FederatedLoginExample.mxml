@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					   xmlns:s="library://ns.adobe.com/flex/spark" 
-					   xmlns:mx="library://ns.adobe.com/flex/mx">
+					   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="800" minHeight="600">
 	<fx:Script>
 		<![CDATA[
-						
+			
 			private static const FIREBASE_API_KEY:String = "YOUR-API-KEY";
 			private static const FIREBASE_CREATE_AUTH_URL:String = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/createAuthUri?key="+FIREBASE_API_KEY;
 			private static const FIREBASE_VERIFY_ASSERTION_URL:String = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyAssertion?key="+FIREBASE_API_KEY;
@@ -12,7 +12,7 @@
 			private var webView:StageWebView;		
 			private var sessionId:String;
 			private var requestUri:String;
-						
+			
 			private function startAuth(provider:String):void
 			{			
 				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
@@ -84,8 +84,8 @@
 			
 			private function registerComplete(event:flash.events.Event):void
 			{
-				trace(event.currentTarget.data);
-				var rawData:Object = JSON.parse(event.currentTarget.data);
+				currentState = "InfoState";
+				myTA.text = event.currentTarget.data;
 			}
 			
 			private function errorHandler(event:flash.events.IOErrorEvent):void
@@ -95,11 +95,22 @@
 			
 		]]>
 	</fx:Script>
+		
+	<s:states>
+		<s:State name="LoginState"/>
+		<s:State name="InfoState"/>
+	</s:states>
 	
-	<s:VGroup horizontalCenter="0" verticalCenter="0">
-		<s:Button id="facebookButton" label="Sign in with Facebook" click="startAuth('facebook.com')"/>
-		<s:Button id="twitterButton" label="Sign in with Twitter" click="startAuth('twitter.com')"/>
-		<s:Button id="googleButton" label="Sign in with Google" click="startAuth('google.com')"/>
-	</s:VGroup>
+	<s:Panel includeIn="LoginState" title="Select a Provider" horizontalCenter="0" verticalCenter="0">
+		<s:VGroup id="loginGroup" padding="10">
+			<s:Button id="facebookButton" label="Sign in with Facebook" width="150" click="startAuth('facebook.com')"/>
+			<s:Button id="twitterButton" label="Sign in with Twitter" width="150" click="startAuth('twitter.com')"/>
+			<s:Button id="googleButton" label="Sign in with Google" width="150" click="startAuth('google.com')"/>
+		</s:VGroup>	
+	</s:Panel>
+	
+	<s:Panel includeIn="InfoState" title="User Information" left="10" right="10" top="10" bottom="10">
+		<mx:TextArea id="myTA" left="10" right="10" top="10" bottom="10"/>
+	</s:Panel>
 	
 </s:WindowedApplication>

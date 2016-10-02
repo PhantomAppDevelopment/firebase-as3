@@ -38,12 +38,34 @@ You will only require the following Database Rules:
 }
 ```
 
+## FederatedCRUD.mxml
+
+An Apache Flex example that demonstrates how to use Federated Login with the Firebase Database to manage a private journal. Each user can only read and modify their own journal.
+
+You will require to enable the `Facebook`, `Twitter` or `Google` providers for your project, you will also require the following Database Rules:
+
+```json
+{
+    "rules": {
+        "journal": {
+            "$user_id": {
+                ".indexOn": [
+                    "due_date"
+                ],
+                ".read": "$user_id === auth.uid",
+                ".write": "$user_id === auth.uid"
+            }
+        }
+    }
+}
+```
+
 ## FileManager.mxml
 
 An Apache Flex example that demonstrates how to use Firebase Auth, Firebase Storage and Firebase Database to store and manage user images.
 Every user will have their own private folder where they will be able to upload, download and delete their images.
 
-You will require the following Database Rules:
+You will require to enable the `Email` provider for your project, you will also require the following Database Rules:
 
 ```json
 {
@@ -70,13 +92,13 @@ service firebase.storage {
 }
 ```
 
-## EmailExample.mxml
+## EmailLoginExample.mxml
 
 An Apache Flex example that demonstrates how to perform most operations from the Email Auth service.
 
 You will only require to provide your Firebase API Key and enable the `Email & Password` auth provider.
 
-## FederatedExample.mxml
+## FederatedLoginExample.mxml
 
 An Apache Flex example that demonstrates how to perform log-in using Google, Twitter and Facebook providers within the same app.
 

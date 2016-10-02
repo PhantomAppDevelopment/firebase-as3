@@ -108,7 +108,7 @@ The `auth.uid` parameter means the following:
 
 An Authentication Token is an encoded string that contains information about the user that is trying to perform an operation against the database.
 
-There are several ways to generate these tokens, this guide will only explain how to do it using Google Identity Toolkit so you won't require to do Cryptographic wizardy.
+There are several ways to generate these tokens, this guide will only explain how to do it using Google Identity Toolkit so you won't require to do Cryptographic wizardry.
 
 For more detailed information on how to generate and manage an `authToken` please consult the [Firebase Auth guide](/../auth).
 

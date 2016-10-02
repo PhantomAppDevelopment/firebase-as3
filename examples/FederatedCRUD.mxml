@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="800" minHeight="600">
+	<fx:Script>
+		<![CDATA[
+			import spark.events.GridSelectionEvent;
+			
+			private static const FIREBASE_API_KEY:String = "YOUR-FIREBASE-APIKEY";
+			private static const FIREBASE_CREATE_AUTH_URL:String = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/createAuthUri?key="+FIREBASE_API_KEY;
+			private static const FIREBASE_VERIFY_ASSERTION_URL:String = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/verifyAssertion?key="+FIREBASE_API_KEY;
+			private static const FIREBASE_REDIRECT_URL:String = "https://<YOUR-PROJECT-ID>.firebaseapp.com/__/auth/handler";
+			private static const JOURNAL_URL:String = "https://<YOUR-PROJECt-ID>.firebaseio.com/journal/";
+			
+			private var webView:StageWebView;
+			private var sessionId:String;
+			private var requestUri:String;
+			private var profile:Object;
+			private var authToken:String;
+			
+			private function startAuth(provider:String):void
+			{			
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.continueUri = FIREBASE_REDIRECT_URL;
+				myObject.providerId = provider;
+				
+				var request:URLRequest = new URLRequest(FIREBASE_CREATE_AUTH_URL);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, authURLCreated);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);			
+			}
+			
+			private function authURLCreated(event:flash.events.Event):void
+			{
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				
+				//We store the sessionId value from the response for later use
+				sessionId = rawData.sessionId;
+				
+				webView = new StageWebView();
+				webView.addEventListener(LocationChangeEvent.LOCATION_CHANGE, changeLocation);
+				webView.stage = this.stage;
+				webView.viewPort = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
+				
+				//We load the URL from the response, it will automatically contain the client id, scopes and the redirect URL
+				webView.loadURL(rawData.authUri);
+			}
+			
+			private function changeLocation(event:LocationChangeEvent):void
+			{			
+				var location:String = webView.location;
+				
+				if(location.indexOf("/__/auth/handler?code=") != -1 || location.indexOf("/__/auth/handler?state=") != -1 || location.indexOf("/__/auth/handler#state=") != -1 && location.indexOf("error") == -1){
+					
+					//We are looking for a code parameter in the URL, once we have it we dispose the webview and prepare the last URLRequest	
+					webView.removeEventListener(LocationChangeEvent.LOCATION_CHANGE, changeLocation);
+					webView.dispose();
+					
+					requestUri = location;
+					getAccountInfo();
+				}           
+			}
+			
+			private function getAccountInfo():void
+			{     
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.requestUri = requestUri;
+				myObject.sessionId = sessionId;
+				
+				var request:URLRequest = new URLRequest(FIREBASE_VERIFY_ASSERTION_URL);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, registerComplete);
+				loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);		
+			}			
+			
+			private function registerComplete(event:flash.events.Event):void
+			{
+				//After a successful login/register we save the response into am easily accessible Object
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				profile = rawData;
+				
+				refreshToken(profile.idToken);
+			}
+			
+			private function refreshToken(idToken:String):void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+				
+				var myObject:Object = new Object();
+				myObject.grant_type = "authorization_code";
+				myObject.code = idToken;			
+				
+				var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
+				request.method = URLRequestMethod.POST;
+				request.data = JSON.stringify(myObject);
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+				loader.load(request);	
+			}
+			
+			private function refreshTokenLoaded(event:flash.events.Event):void
+			{
+				event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+
+				var rawData:Object = JSON.parse(event.currentTarget.data);
+				authToken = rawData.access_token;
+				currentState = "GridState";
+			}
+			
+			protected function selectItem(event:GridSelectionEvent):void
+			{
+				titleInput.text = journalGrid.selectedItem.title;
+				descriptionInput.text = journalGrid.selectedItem.description;
+				
+				deleteBtn.enabled = true;
+				modifyBtn.enabled = true;
+			}
+						
+			/*
+			Read block
+			*/
+			private function loadJournal():void
+			{
+				var request:URLRequest = new URLRequest(JOURNAL_URL+profile.localId+".json?auth="+authToken);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, journalLoaded);
+				loader.load(request);
+			}
+			
+			private function journalLoaded(event:flash.events.Event):void
+			{
+				event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, journalLoaded);
+				
+				//The JSON generated by Firebase contains the id as the node key, we use this function to add it to our Objects
+				var rawData:Object = JSON.parse(event.currentTarget.data);			
+				var entriesArray:Array = new Array();
+				
+				for (var parent:String in rawData)
+				{
+					var tempObject:Object = new Object();
+					tempObject.id = parent;
+					
+					for (var child:* in rawData[parent])
+					{
+						tempObject[child] = rawData[parent][child];
+					}
+					
+					entriesArray.push(tempObject);
+					tempObject = null;
+				}
+				
+				journalGrid.dataProvider = new ArrayList(entriesArray);				
+				
+				titleInput.text = "";
+				descriptionInput.text = "";
+				deleteBtn.enabled = false;
+				modifyBtn.enabled = false;
+			}
+			
+			/*
+			Insert block
+			*/
+			private function saveEntry():void
+			{
+				var myObject:Object = new Object();
+				myObject.title = titleInput.text;
+				myObject.description = descriptionInput.text;
+				myObject.timestamp = new Date().getTime();
+				
+				var request:URLRequest = new URLRequest(JOURNAL_URL+profile.localId+".json?auth="+authToken);
+				request.data = JSON.stringify(myObject);
+				request.method = URLRequestMethod.POST;
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, entrySent);
+				loader.load(request);		
+			}
+			
+			private function entrySent(event:flash.events.Event):void
+			{
+				event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, entrySent);
+				loadJournal();
+			}
+			
+			/*
+			Delete block
+			*/
+			private function deleteEntry():void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");			
+				
+				var request:URLRequest = new URLRequest(JOURNAL_URL+profile.localId+"/"+journalGrid.selectedItem.id+".json?auth="+authToken);
+				request.method = URLRequestMethod.POST;
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, entryDeleted);
+				loader.load(request);			
+			}
+			
+			private function entryDeleted(event:flash.events.Event):void
+			{
+				event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, entryDeleted);
+				loadJournal();
+			}
+			
+			/*
+			Update block
+			*/
+			private function updateEntry():void
+			{
+				var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "PATCH");			
+				
+				var myObject:Object = new Object();
+				myObject.title = titleInput.text;
+				myObject.description = descriptionInput.text;
+				
+				var request:URLRequest = new URLRequest(JOURNAL_URL+profile.localId+"/"+journalGrid.selectedItem.id+".json?auth="+authToken);
+				request.data = JSON.stringify(myObject);
+				request.method = URLRequestMethod.POST;
+				request.requestHeaders.push(header);
+				
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(flash.events.Event.COMPLETE, entryUpdated);
+				loader.load(request);			
+			}
+			
+			private function entryUpdated(event:flash.events.Event):void
+			{
+				event.currentTarget.removeEventListener(flash.events.Event.COMPLETE, entryUpdated);
+				loadJournal();
+			}
+			
+			/*
+			Universal Error Hadnler
+			*/			
+			private function errorHandler(event:flash.events.IOErrorEvent):void
+			{
+				trace(event.currentTarget.data);
+			}
+			
+		]]>
+	</fx:Script>
+		
+	<s:states>
+		<s:State name="LoginState"/>
+		<s:State name="GridState" enterState="loadJournal()"/>
+	</s:states>
+	
+	<s:Panel includeIn="LoginState" title="Select a Provider" horizontalCenter="0" verticalCenter="0">
+		<s:VGroup id="loginGroup" padding="10">
+			<s:Button id="facebookButton" label="Sign in with Facebook" width="150" click="startAuth('facebook.com')"/>
+			<s:Button id="twitterButton" label="Sign in with Twitter" width="150" click="startAuth('twitter.com')"/>
+			<s:Button id="googleButton" label="Sign in with Google" width="150" click="startAuth('google.com')"/>
+		</s:VGroup>	
+	</s:Panel>
+	
+	<s:VGroup includeIn="GridState" left="10" right="10" top="10" bottom="10">
+		<s:DataGrid id="journalGrid" selectionChange="selectItem(event)" width="100%" height="100%">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn headerText="ID" dataField="id" />
+					<s:GridColumn headerText="Title" dataField="title" />
+					<s:GridColumn headerText="Description" dataField="description" />
+					<s:GridColumn headerText="Timestamp" dataField="timestamp" />
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		
+		<s:TextInput id="titleInput" prompt="Type a Title" width="100%"/>
+		<s:TextArea id="descriptionInput" prompt="Type a Description" width="100%" height="100"/>
+		
+		<s:HGroup width="100%" horizontalAlign="center">
+			<s:Button id="deleteBtn" label="Delete" click="deleteEntry()"/>
+			<s:Button id="modifyBtn" label="Modify" click="updateEntry()"/>
+			<s:Button id="createBtn" label="Create" click="saveEntry()"/>			
+		</s:HGroup>
+	</s:VGroup>	
+	
+</s:WindowedApplication>
