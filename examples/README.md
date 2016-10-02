@@ -49,9 +49,6 @@ You will require to enable the `Facebook`, `Twitter` or `Google` providers for y
     "rules": {
         "journal": {
             "$user_id": {
-                ".indexOn": [
-                    "due_date"
-                ],
                 ".read": "$user_id === auth.uid",
                 ".write": "$user_id === auth.uid"
             }
