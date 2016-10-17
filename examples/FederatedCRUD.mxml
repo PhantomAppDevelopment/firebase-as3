@@ -250,7 +250,7 @@
 			}
 			
 			/*
-			Universal Error Hadnler
+			Universal Error Handler
 			*/			
 			private function errorHandler(event:flash.events.IOErrorEvent):void
 			{

@@ -4,6 +4,28 @@ Firebase offers a very flexible and secure way to save text-based data.
 
 This guide will show some of the most common scenarios and it will explain how to use Rules for your database. It is also written from an ActionScript and SQL perspective.
 
+## iOS NSAppTransportSecurity
+
+Before you start integrating Firebase Database in your iOS projects you must add the following exceptions in the `iPhone` section from your descriptor file.
+
+```xml
+<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>firebaseio.com</key>
+            <dict>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+                <key>NSThirdPartyExceptionRequiresForwardSecrecy</key>
+                <false/>
+            </dict>
+        </dict>
+    </dict>
+```
+
+Firebase Auth and Storage don't rely on these rules to function.
+
 ## Understanding the Data
 
 The data saved in the Firebase database is structured like a tree. Each 'branch' can have its own branches and those sub branches can have their own sub branches.
