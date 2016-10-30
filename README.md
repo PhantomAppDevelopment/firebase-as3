@@ -54,7 +54,7 @@ You can read the guides in any order but it is recommended to start with the [Fi
 
 Firebase ANEs are based on the Android and iOS official SDKs, providing all of their native features.
 
-These guides are based on the JavaScript SDK, while keeping the same functionality inside the AIR runtime instead of a web browser.
+These guides are based on the JavaScript SDK, which provides the same functionality from the Web browser but inside the AIR runtime.
 
 ### **Which are the benefits of using these guides?**
 

@@ -46,7 +46,7 @@ These rules are very similar to the `Auth` default rules. They mean that any aut
 
 ## Public Reading and Writing
 
-The following rules allows any user to upload, delete and mofify files from your entire bucket. Use this only while developing and testing.
+The following rules allows any user to upload, delete and modify files from your entire bucket. Use this only while developing and testing.
 
 ```
 service firebase.storage {
