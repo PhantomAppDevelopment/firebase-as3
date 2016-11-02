@@ -383,3 +383,34 @@ The `localId` can be obtained after a successful `Sign In`, `Sign Up` or `Get Ac
 The `auth` value can be obtained after a successful `Refresh Token` request.
 
 For more information on these values you can read the [Firebase Auth guide](./../auth/).
+
+## Firebase Server Variables
+
+Firebase allows you to use server variables for your fields. At the moment of this writing Firebase only offers a `timestamp` variable.
+
+To use a server variable you need to create a property on your payload with the following signature: `{".sv": "variable_type"}`.
+
+In the following example we are using the `timestamp` variable so our message will use a Firebase timestamp instead of a local one from the user's device.
+
+```actionscript
+private function sendMessage(message:String, username:String):void
+{
+    var myObject:Object = new Object();
+    myObject.message = message;
+    myObject.username = username;
+    myObject.timestamp = {".sv": "timestamp"};
+
+    var request:URLRequest = new URLRequest("https://<YOUR-PROJECT-ID>.firebaseio.com/messages.json");
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+
+    var loader:URLLoader = new URLLoader();
+    loader.addEventListener(Event.COMPLETE, messageSent);
+    loader.load(request);
+}
+
+private function messageSent(event:Event):void
+{
+    trace(event.currentTarget.data);
+}
+```

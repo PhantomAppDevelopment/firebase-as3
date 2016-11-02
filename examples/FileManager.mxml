@@ -216,7 +216,7 @@
 			{
 				PopUpManager.removePopUp(alert);				
 				
-				//The file has been successfully uploaded, we now createa a reference of it into the Database				
+				//The file has been successfully uploaded, we now create a reference of it into the Database				
 				var rawData:Object = JSON.parse(event.currentTarget.data);				
 				var myObject:Object = new Object();
 				
@@ -246,7 +246,7 @@
 			}
 			
 			/*
-			Download Image Blcok
+			Download Image Block
 			*/
 			private function downloadImage():void
 			{

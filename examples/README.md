@@ -89,13 +89,13 @@ service firebase.storage {
 }
 ```
 
-## EmailLoginExample.mxml
+## EmailLogin.mxml
 
 An Apache Flex example that demonstrates how to perform most operations from the Email Auth service.
 
 You will only require to provide your Firebase API Key and enable the `Email & Password` auth provider.
 
-## FederatedLoginExample.mxml
+## FederatedLogin.mxml
 
 An Apache Flex example that demonstrates how to perform log-in using Google, Twitter and Facebook providers within the same app.
 
