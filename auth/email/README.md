@@ -84,7 +84,7 @@ Once this Sign Up token has expired you must refresh it (see bottom of this page
 
 ## Verifying Credentials (Sign In)
 
-To sign in a user you only require to provide their valid Email Address and Password
+To sign in an user you only require to provide their valid Email Address and Password and the `returnSecureToken` parameter.
 
 ```actionscript
 private function register(email:String, password:String):void
@@ -92,6 +92,7 @@ private function register(email:String, password:String):void
     var myObject:Object = new Object();
     myObject.email = email;
     myObject.password = password;
+    myObject.returnSecureToken = true;
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				
@@ -121,13 +122,16 @@ A successful response will look like the following JSON structure:
     "email": "someone@example.com",
     "displayName": "",
     "idToken": "<A long String>",
-    "registered": true
+    "registered": true,
+    "refreshToken": "<A long String>",
+    "expiresIn": "3600"
 }
 ```
 
 Note that failing to enter the correct password 3 times in a row will block the IP for future login attempts for a while.
 
-The `idToken` received from this response is used to perform further account management requests. It is also used to get an `access_token` for Auth requests. For more information see the bottom of this page.
+The `idToken` received from this response is used to perform further account management requests.
+The `refreshToken` is used to get an `access_token` for Auth requests. For more information see the bottom of this page.
 
 ## Password Reset
 
@@ -391,16 +395,16 @@ A successful response will look like the following JSON structure:
 ## Obtaining and Refreshing an Access Token
 
 By default the `access_token` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To obtain or refresh an `access_token` you only need to provide the `idToken` from a Sign In or Verify Account request and specify the `grant_type` as `"authorization_code"`.
+To obtain or refresh an `access_token` you only need to provide a `refreshToken` from a Sign In request and specify the `grant_type` as `"refresh_token"`.
 
 ```actionscript
-private function refreshToken(idToken:String):void
+private function refreshToken(refreshToken:String):void
 {
 	var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 			
 	var myObject:Object = new Object();
-	myObject.grant_type = "authorization_code";
-	myObject.code = idToken;			
+	myObject.grant_type = "refresh_token";
+    myObject.refresh_token = refreshToken;			
 			
 	var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
 	request.method = URLRequestMethod.POST;
