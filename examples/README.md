@@ -6,7 +6,7 @@ It is strongly recommended to use recent versions of `Adobe AIR` and `Apache Fle
 
 ## SimpleChat.mxml
 
-An Apache Flex example that demonstrates how to use the Firebase Database with realtime data and Email auth. This project makes use of the `Responses.as` file that can be found in the [utils folder](./../utils).
+An Apache Flex example that demonstrates how to use the Firebase Database with realtime data and Email auth.
 
 You will require to enable the `Email` provider for your project, you will also require the following Database Rules:
 
@@ -100,3 +100,13 @@ You will only require to provide your Firebase API Key and enable the `Email & P
 An Apache Flex example that demonstrates how to perform log-in using Google, Twitter and Facebook providers within the same app.
 
 You will only require to provide your Firebase API Key and enable the providers of your choice.
+
+## ToDo app
+*Main repository: [ToDo App](https://github.com/PhantomAppDevelopment/todo-app)*
+
+ToDo App is a mobile application developed with Starling Framework and FeathersUI. It showcases how to use Firebase services with ActionScript to create simple and secure CRUD system.
+
+## Pizza App
+*Main repository: [Pizza App](https://github.com/PhantomAppDevelopment/pizza-app)*
+
+Pizza App is a mobile application developed with Starling Framework and FeathersUI. It showcases how to use Firebase services with ActionScript to create a small social network.
