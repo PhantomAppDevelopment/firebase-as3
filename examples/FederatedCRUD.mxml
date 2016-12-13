@@ -75,6 +75,7 @@
 				var myObject:Object = new Object();
 				myObject.requestUri = requestUri;
 				myObject.sessionId = sessionId;
+				myObject.returnSecureToken = true;
 				
 				var request:URLRequest = new URLRequest(FIREBASE_VERIFY_ASSERTION_URL);
 				request.method = URLRequestMethod.POST;
@@ -93,17 +94,17 @@
 				var rawData:Object = JSON.parse(event.currentTarget.data);
 				profile = rawData;
 				
-				refreshToken(profile.idToken);
+				refreshToken(profile.refreshToken);
 			}
 			
-			private function refreshToken(idToken:String):void
+			private function refreshToken(refreshToken:String):void
 			{
 				var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				
 				var myObject:Object = new Object();
-				myObject.grant_type = "authorization_code";
-				myObject.code = idToken;			
-				
+				myObject.grant_type = "refresh_token";
+				myObject.refresh_token = refreshToken;		
+								
 				var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
 				request.method = URLRequestMethod.POST;
 				request.data = JSON.stringify(myObject);

@@ -101,7 +101,7 @@ An Apache Flex example that demonstrates how to perform log-in using Google, Twi
 
 You will only require to provide your Firebase API Key and enable the providers of your choice.
 
-## ToDo app
+## ToDo App
 *Main repository: [ToDo App](https://github.com/PhantomAppDevelopment/todo-app)*
 
 ToDo App is a mobile application developed with Starling Framework and FeathersUI. It showcases how to use Firebase services with ActionScript to create simple and secure CRUD system.

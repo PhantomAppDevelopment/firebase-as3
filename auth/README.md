@@ -156,6 +156,7 @@ private function getAccountInfo():void
 	var myObject:Object = new Object();
 	myObject.requestUri = requestUri;
 	myObject.sessionId = sessionId;
+	myObject.returnSecureToken = true;
 			
 	var request:URLRequest = new URLRequest(FIREBASE_VERIFY_ASSERTION_URL);
 	request.method = URLRequestMethod.POST;
@@ -169,10 +170,11 @@ private function getAccountInfo():void
 }
 ```
 
-We created another `URLRequest` with 2 parameters:
+We created another `URLRequest` with 3 parameters:
 
 * `requestUri` is the URI that contains the `code`, this code will be parsed by the Google Identity Toolkit service and then used to retrieve the logged in user profile information from the choosen provider.
 * `sessionId` is from the very start when we requested the `authUri`.
+* `returnSecureToken` is required to obtain a `refreshToken` that will later be exchanged for an `access_token` to authenticate against Firebase Database and Storage.
 
 Now we add the `registerComplete` function that will contain the logged in user information.
 
@@ -190,8 +192,9 @@ This information is formatted the same for all providers, the most important val
 
 Name | Description
 ---|---
+`providerId`| A unique id assigned for the provider used in the Sign In process, for example: `facebook.com` or `twitter.com`.
 `localId`| A unique id assigned for the logged in user for your specific Firebase project. This is very useful when working with Firebase Database and Firebase Storage.
-`idToken`| An identity token that is used to identify the current logged in user. The `idToken` is used in further Auth requests such as exchanging it for an `access_token`.
+`refreshToken`| An identity token that is used to identify the current logged in user. The `refreshToken` is used in further Auth requests such as exchanging it for an `access_token`.
 `displayName`| The logged in user full name (Google and Facebook) or their handler in Twitter.
 `photoUrl`| The logged in user avatar.
 `email`| The logged in user email address.
@@ -203,16 +206,16 @@ Once you have the profile information you might want to save it on an Object tha
 ## Obtaining and Refreshing an Access Token
 
 By default the `access_token` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To obtain or refresh an `access_token` you only need to provide the `idToken` from a Sign In or Verify Account request and specify the `grant_type` as `"authorization_code"`.
+To obtain or refresh an `access_token` you only need to provide a `refreshToken` from a Sign In request and specify the `grant_type` as `"refresh_token"`.
 
 ```actionscript
-private function refreshToken(idToken:String):void
+private function refreshToken(refreshToken:String):void
 {
 	var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 			
 	var myObject:Object = new Object();
-	myObject.grant_type = "authorization_code";
-	myObject.code = idToken;			
+	myObject.grant_type = "refresh_token";
+	myObject.refresh_token = refreshToken;		
 			
 	var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
 	request.method = URLRequestMethod.POST;

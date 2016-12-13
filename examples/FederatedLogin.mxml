@@ -70,7 +70,8 @@
 				var myObject:Object = new Object();
 				myObject.requestUri = requestUri;
 				myObject.sessionId = sessionId;
-				
+				myObject.returnSecureToken = true;
+								
 				var request:URLRequest = new URLRequest(FIREBASE_VERIFY_ASSERTION_URL);
 				request.method = URLRequestMethod.POST;
 				request.data = JSON.stringify(myObject);
