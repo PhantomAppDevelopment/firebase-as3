@@ -87,7 +87,7 @@ Once this Sign Up token has expired you must refresh it (see bottom of this page
 To sign in an user you only require to provide their valid Email Address and Password and the `returnSecureToken` parameter.
 
 ```actionscript
-private function register(email:String, password:String):void
+private function login(email:String, password:String):void
 {
     var myObject:Object = new Object();
     myObject.email = email;
