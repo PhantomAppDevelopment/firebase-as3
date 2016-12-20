@@ -43,6 +43,7 @@ private function register(email:String, password:String):void
     var myObject:Object = new Object();
     myObject.email = email;
     myObject.password = password;
+    myObject.returnSecureToken = true;
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				
@@ -78,9 +79,8 @@ The user will be automatically registered in the Auth section from your Firebase
 
 For an Anonymous approach you don't need to specify anything in the request body. You will still get a response similar to the above just without an Email Address.
 
-The `idToken` received from this response can be used as an `authToken` for the Firebase Database, Firebase Storage and Firebase Auth requests.
-
-Once this Sign Up token has expired you must refresh it (see bottom of this page).
+The `idToken` received from this response is used to perform further account management requests.
+The `refreshToken` is used to get an `access_token` for Auth requests. For more information see the bottom of this page.
 
 ## Verifying Credentials (Sign In)
 

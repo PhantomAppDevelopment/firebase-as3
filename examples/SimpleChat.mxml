@@ -9,7 +9,7 @@
         import spark.components.Alert;
 
         private static const FIREBASE_API_KEY:String = "";
-        private static const CHATROOM_URL:String = "https://<YOUR-PROJECT-ID>.firebaseio.com/messages";
+        private static const CHATROOM_URL:String = "https://<YOUR-PROJECT-ID?.firebaseio.com/messages";
 
         private var messagesStream:URLStream;
         private var profile:Object;
@@ -76,6 +76,7 @@
                 myObject.displayName = usernameInput.text;
                 myObject.email = registerEmailInput.text;
                 myObject.password = registerPasswordInput.text;
+                myObject.returnSecureToken = true;
 
                 var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 
@@ -95,8 +96,7 @@
         {
             var rawData:Object = JSON.parse(event.currentTarget.data);
             profile = rawData;
-            authToken = rawData.idToken;
-            currentState = "ChatState";
+            refreshToken(profile.refreshToken);
         }
 
         /*
