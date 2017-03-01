@@ -35,7 +35,13 @@ private function errorHandler(event:flash.events.IOErrorEvent):void
 
 ## Registering a New User (Sign Up)
 
-To register a new user you only require to provide a valid formatted Email Address and a non weak Password.
+To register a new user you only require to provide the following parameters:
+
+Name | Description
+---|---
+`email` | A valid formatted Email Address.
+`password` | A non weak Password.
+`returnSecureToken` | Set to: `true`
 
 ```actionscript
 private function register(email:String, password:String):void
@@ -84,7 +90,13 @@ The `refreshToken` is used to get an `access_token` for Auth requests. For more 
 
 ## Verifying Credentials (Sign In)
 
-To sign in an user you only require to provide their valid Email Address and Password and the `returnSecureToken` parameter.
+To sign in an user you only require to provide the following parameters:
+
+Name | Description
+---|---
+`email` | The user's Email Address.
+`password` | The user's Password.
+`returnSecureToken` | Set to: `true`
 
 ```actionscript
 private function login(email:String, password:String):void
@@ -135,10 +147,12 @@ The `refreshToken` is used to get an `access_token` for Auth requests. For more 
 
 ## Password Reset
 
-To reset a password you only require to provide 2 parameters:
+To reset a password you only require to provide the following parameters:
 
-* `email` is the Email Address you want to send the Password recovery email.
-* `requestType` with the value: `PASSWORD_RESET`
+Name | Description
+---|---
+`email` | The Email Address you want to send the Password recovery email.
+`requestType` | Set to: `PASSWORD_RESET`
 
 ```actionscript
 private function resetPassword(emai:String):void
@@ -185,9 +199,11 @@ This is commonly used in message boards and ecommerce solutions.
 
 This method is similar to the Reset Password one, you need to provide the following parameters:
 
-* `email` is the email address you want to verify.
-* `requestType` with the value: `EMAIL_VERIFY`
-* `idToken` is a long encoded String that contains user information. You can obtain this String from the response Object in the Sign Up and Sign In methods. 
+Name | Description
+---|---
+`email` | The Email Address you want to verify.
+`requestType` | Set to: `EMAIL_VERIFY`
+`idToken` | A long encoded String that contains user information. You can obtain this String from the response in the Sign Up and Sign In methods. 
 
 ```actionscript
 private function verifyEmail(idToken:String, email:String):void
@@ -395,7 +411,12 @@ A successful response will look like the following JSON structure:
 ## Obtaining and Refreshing an Access Token
 
 By default the `access_token` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To obtain or refresh an `access_token` you only need to provide a `refreshToken` from a Sign In request and specify the `grant_type` as `"refresh_token"`.
+To obtain or refresh an `access_token` you only need to provide the following parameters:
+
+Name | Description
+---|---
+`refreshToken` | A long encoded String that contains user information. You can obtain it from a Sign In request.
+`grant_type` | Set to: `refresh_token`
 
 ```actionscript
 private function refreshToken(refreshToken:String):void

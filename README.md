@@ -2,7 +2,7 @@
 
 Firebase is a back end platform that offers several services to aid in the development of apps and games, specially the ones that rely on server side infrastructure.
 
-Some of its services can be accessed by using RESTful techniques. This repository contains detailed guides and [examples](./examples) explaining how to use those services in your `Adobe AIR ` projects.
+Some of its services can be accessed by using a RESTful approach. This repository contains detailed guides and [examples](./examples) explaining how to use those services in your `Adobe AIR ` projects.
 
 You won't need an `ANE` for these guides, all of them work only using `StageWebView`, `URLRequest` and `URLLoader`.
 

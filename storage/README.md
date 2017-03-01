@@ -6,7 +6,7 @@ Files are stored the same way as in your personal computer, using a tree hierarc
 
 It is strongly recommended to avoid the use of special characters when naming files and folders.
 
-You need special care for the slash character `(/)`. I recommend using this helper function to URL encode them:
+You will need special care for the slash character `(/)`. I recommend using this helper function to URL encode them:
 
 ```actionscript
 private function formatUrl(url:String):String
@@ -84,11 +84,10 @@ service firebase.storage {
 }
 ```
 
-## Uploading a File
+## Prerequisites
 
-To upload a file you require to send it as a `ByteArray`. The following snippets show the most common scenarios.
 
-All of the examples use the following `Event.COMPLETE` and `IOErrorEvent.IOERROR` listeners.
+Since Firebase returns useful error information we will use the following `Event.COMPLETE` and `IOErrorEvent.IOERROR` listeners in all of our requests.
 
 ```actionscript
 private function uploadComplete(event:flash.events.Event):void
@@ -102,9 +101,11 @@ private function errorHandler(event:flash.events.Event):void
 }
 ```
 
-If you upload the same file to the same location, it will be replaced with new metadata.
+## Uploading from a fixed location
 
-### Uploading from a fixed location
+To upload a file you require to send it as a `ByteArray`. The following snippets show the most common scenarios.
+
+If you upload the same file to the same location, it will be replaced with new metadata.
 
 In this example we are uploading a file from a predefined location. A common example is syncing a save game after a game session:
 
@@ -119,7 +120,7 @@ private function uploadFile():void
     fileStream.readBytes(bytes);
     fileStream.close();
 				
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+"savegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.data = bytes;
     request.contentType = "text/plain";
@@ -156,9 +157,9 @@ Your new file and a `savegames` folder will instantly appear in the Storage sect
 
 The `contentType` doesn't need to be accurate, but it is recommended to set it properly.
 
-### Uploading with Auth
+## Uploading with Auth
 
-Authorizing requests for Firebase Storage is a bit different than in Firebase Database. Instead of adding an `auth` parameter in the URL with the `authToken`, we add it into an `URLRequestHeader`.
+Authorizing requests for Firebase Storage is a bit different than in Firebase Database. Instead of adding an `auth` parameter in the URL with the `authToken`, we add it into a header.
 
 ```actionscript
 private function uploadFile(authToken:String):void
@@ -173,7 +174,7 @@ private function uploadFile(authToken:String):void
     
     var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);			
 
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+"savegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.data = bytes;
     request.contentType = "text/plain";
@@ -220,7 +221,7 @@ private function deleteFile():void
 {
     var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");			
 				
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.requestHeaders.push(header);
 				
@@ -233,7 +234,9 @@ private function deleteFile():void
 
 A successful response will return an [empty String](https://cloud.google.com/storage/docs/json_api/v1/objects/delete).
 
-Use the following snippet if you want to delete the same file using authentication:
+## Deleting a File with Auth
+
+To delete a file with authentication you only need to provide an `authToken` in the `Authorization` header and the file path in a `DELETE` request.
 
 ```actionscript
 private function deleteFile(authToken:String):void
@@ -241,7 +244,7 @@ private function deleteFile(authToken:String):void
     var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "DELETE");			
     var header2:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);			
 			
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.requestHeaders.push(header);
     request.requestHeaders.push(header2);
@@ -255,7 +258,7 @@ private function deleteFile(authToken:String):void
 
 ## Updating Metadata
 
-To modify the metadata generated after your upload a file you will only require to indicate which fields do you need to update. This is very similar as updating the Firebase Database data.
+To modify the metadata generated after your upload a file you will only require to `JSON` encode which fields do you need to update and send them in a `PATCH` request. This is very similar as updating the Firebase Database data.
 
 Click [here](https://firebase.google.com/docs/storage/web/file-metadata) for a list of all the fields that can be modified. In the following example we are going to change the `contentType`.
 
@@ -302,19 +305,23 @@ A successful response will look like the following JSON structure:
 }
 ```
 
-Use the following snippet if you want to update the same file using authentication:
+## Updating Metadata with Auth
+
+To update metadata with authentication you need to provide an `authToken` in the `Authorization` header.
+
+You will also require to `JSON` encode which fields do you need to update and send them in a `PATCH` request.
 
 ```actionscript
-private function updateMetadata():void
+private function updateMetadata(authToken:String):void
 {
     var myObject:Object = new Object();
     myObject.contentType = "application/binary";
 				
     var header:URLRequestHeader = new URLRequestHeader("X-HTTP-Method-Override", "PATCH");			
     var header2:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
-    var header3:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+profile.authToken);         
+    var header3:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);         
 		
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+"savegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.data = JSON.stringify(myObject);
     request.requestHeaders.push(header);
@@ -328,11 +335,16 @@ private function updateMetadata():void
 }
 ```
 
-## Downloading Files
+## Downloading a File
 
 To download files from your Firebase Storage bucket you only require to send a `GET` request with the full path of the file and the parameter `alt=media`.
+You will also require the followinv values from the `JSON` structure.
 
-We are going to use the following JSON structure as our example:
+Name | Description
+---|---
+`name` | The path of the file including its name.
+`bucket` | Your Firebase Project ID plus the `appspot.com` domain.
+`downloadTokens` | A String used for downloading private files.
 
 ```json
 {
@@ -355,29 +367,29 @@ We are going to use the following JSON structure as our example:
 
 There are several ways to download files using the AIR runtime, we are going to use the easiest one: `navigateToURL()`.
 
-Use the following code to download a `public` file:
+The following example downloads a `public` file:
 
 ```actionscript
 private function downloadFile():void
 {
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data?alt=media");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data"+"?alt=media");
     navigateToURL(request);
 }
 ```
 
-Use the following code to download a `private` file:
+## Downloading a Private File
+
+Downloading `private` files doesn't require the `Authorization` header. You only require to provide the `token` parameter and the file path.
+
+The `token` parameter is the `downloadTokens` value from the `JSON` response when you upload a file.
 
 ```actionscript
 private function downloadFile(downloadTokens:String):void
 {
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data?alt=media&token="+downloadTokens);
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data"+"?alt=media&token="+downloadTokens);
     navigateToURL(request);
 }
 ```
-
-Don't forget to encode the slash character from `(/)` to `%2F`.
-
-The `token` parameter refers to the `downloadTokens` value from the JSON response when you upload a file.
 
 ## Downloading Metadata
 
@@ -388,7 +400,7 @@ To download the metadata of a `public` file you only require to send a `GET` req
 ```actionscript
 private function downloadMetadata():void
 {
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     
     var loader:URLLoader = new URLLoader();
     loader.addEventListener(flash.events.event.COMPLETE, metadataLoaded);
@@ -401,14 +413,16 @@ private function metadataLoaded(event:flash.events.Event):void
 }
 ```
 
-Use the following snippet to download the metadata of a `private` file:
+## Downloading Private Metadata
+
+To download metadata from `private` files you require to provide an `authToken` in the `Authorization` header.
 
 ```actionscript
 private function downloadMetadata(authToken:String):void
 {
     var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);         
 				
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2Fsavegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.requestHeaders.push(header);
 
@@ -473,7 +487,7 @@ private function uploadPersonalFile(authToken:String, localId:String):void
 				
     var header:URLRequestHeader = new URLRequestHeader("Authorization", "Bearer "+authToken);			
 				
-    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/"+"savegames%2F"+localId+"%2Fsavegame.data");
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/savegames%2F"+localId+"%2F"+"savegame.data");
     request.method = URLRequestMethod.POST;
     request.data = bytes;
     request.contentType = "text/plain";

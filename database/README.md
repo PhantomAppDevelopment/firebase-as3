@@ -155,11 +155,10 @@ private function loadNews():void
 private function newsLoaded(event:flash.events.Event):void
 {
     trace(event.currentTarget.data);
-    var rawData:Object = JSON.parse(event.currentTarget.data);								
 }
 ```
 
-A simple GET request (the default for `URLRequest`) is enough. Remember to always add `.json` after the name of the node you want to read.
+A simple `GET` request (the default for `URLRequest`) is enough. Remember to always add `.json` after the name of the node you want to read.
 
 To load a Private resource use the following code:
 
@@ -176,7 +175,6 @@ private function loadSpecialOffers(authToken:String):void
 private function offersLoaded(event:flash.events.Event):void
 {
     trace(event.currentTarget.data);
-    var rawData:Object = JSON.parse(event.currentTarget.data);								
 }
 ```
 
@@ -359,7 +357,7 @@ For example, we want that each user has their independent journal that they can 
 }
 ```
 
-When you want to modify or read their journal you need to specify the users's `localId` (known as `uid` inside the rules)  and `authToken` as part of the URL.
+When you want to modify or read their journal you need to specify the users `localId` (known as `uid` inside the rules)  and `authToken` as part of the URL.
 
 ```actionscript
 private function loadPrivateJournal(localId:String, authToken:String):void
@@ -374,7 +372,6 @@ private function loadPrivateJournal(localId:String, authToken:String):void
 private function journalLoaded(event:flash.events.Event):void
 {
     trace(event.currentTarget.data);
-    var rawData:Object = JSON.parse(event.currentTarget.data);								
 }
 ```
 

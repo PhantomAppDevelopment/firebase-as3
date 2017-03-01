@@ -206,7 +206,12 @@ Once you have the profile information you might want to save it on an Object tha
 ## Obtaining and Refreshing an Access Token
 
 By default the `access_token` has an expiration time of 60 minutes, you can reset its expiration by requesting a fresh one.
-To obtain or refresh an `access_token` you only need to provide a `refreshToken` from a Sign In request and specify the `grant_type` as `"refresh_token"`.
+To obtain or refresh an `access_token` you only need to provide the following parameters:
+
+Name | Description
+---|---
+`refreshToken` | A long encoded String that contains user information. You can obtain it from a Sign In request.
+`grant_type` | Set to: `refresh_token`
 
 ```actionscript
 private function refreshToken(refreshToken:String):void
