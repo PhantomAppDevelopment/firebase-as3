@@ -101,13 +101,13 @@ private function errorHandler(event:flash.events.Event):void
 }
 ```
 
-## Uploading from a fixed location
+## Uploading a File
 
-To upload a file you require to send it as a `ByteArray`. The following snippets show the most common scenarios.
+To upload a file with `URLLoader` you require to send it as a `ByteArray`.
 
 If you upload the same file to the same location, it will be replaced with new metadata.
 
-In this example we are uploading a file from a predefined location. A common example is syncing a save game after a game session:
+In this example we are uploading a file from a predefined location. A common example is syncing a save game after a game session.
 
 ```actionscript
 private function uploadFile():void
@@ -169,7 +169,7 @@ private function uploadFile():void
 {
     var file:File = File.applicationStorageDirectory.resolvePath("heavy_picture.jpg");
     file.addEventListener(ProgressEvent.PROGRESS, progressHandler);
-    ile.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
+    file.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
 
     var fileStream:FileStream = new FileStream();
     fileStream.open(file, FileMode.READ);
@@ -200,7 +200,7 @@ private function uploadCompleteDataHandler(event:DataEvent):void
 
 It is required to send the file as a `String` that represents the file bytes and use the `uploadUnencoded` method.
 
-## Uploading with Auth
+## Uploading a File with Auth
 
 Authorizing requests for Firebase Storage is a bit different than in Firebase Database. Instead of adding an `auth` parameter in the URL with the `authToken`, we add it into a header.
 
