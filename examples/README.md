@@ -89,6 +89,22 @@ service firebase.storage {
 }
 ```
 
+## UploadWithProgress.mxml
+
+An Apache Flex example that demonstrates how to use Firebase Storage to store any kind of files and show a progress indicator.
+
+You will require the following Storage Rules:
+
+```
+service firebase.storage {
+  match /b/<YOUR-PROJECT-ID>.appspot.com/o {
+    match /public_files/{allPaths=**} {
+            allow read, write;
+    }
+  }
+}
+```
+
 ## EmailLogin.mxml
 
 An Apache Flex example that demonstrates how to perform most operations from the Email Auth service.

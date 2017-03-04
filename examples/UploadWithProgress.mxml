@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark"
+                       xmlns:mx="library://ns.adobe.com/flex/mx" minWidth="640" minHeight="480">
+
+    <fx:Script>
+
+        <![CDATA[
+        import mx.managers.PopUpManager;
+
+        private static const FIREBASE_STORAGE_URL:String = "https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/public_files%2F";
+        private var fileRef:FileReference;
+
+        /*
+        This script uploads any file from your computer directly to Firebase Storage and displays a progressbar indicating upload progress.
+        The assigment of EventListeners is super important. IT is advised to not modify the control flow and just copy and paste the code as-is.
+        */
+        private function uploadFile(event:MouseEvent):void
+        {
+            fileRef = new FileReference();
+            fileRef.addEventListener(Event.SELECT, selectHandler);
+            fileRef.addEventListener(Event.COMPLETE, completeHandler);
+            fileRef.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA,uploadCompleteDataHandler);
+            fileRef.browse();
+        }
+
+        /*
+        The file has been selected and it will now be loaded into memory.
+        */
+        private function selectHandler(event:Event):void
+        {
+            fileRef.load();
+        }
+
+        /*
+        We prepare the URLRequest that will be sent in the upload method.
+        The file will be sent as a String that represnets the bytes from the file.
+        We are using uploadUnencoded instead of upload since we have already encoded our data by sending it as a String.
+        Finally, we tell the PopUpManager to add our custom popup and center it. 
+        */
+        private function completeHandler(event:Event):void
+        {
+            fileRef.removeEventListener(Event.COMPLETE, completeHandler);
+            fileRef.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+
+            var request:URLRequest = new URLRequest(FIREBASE_STORAGE_URL+fileRef.name);
+            request.method = URLRequestMethod.POST;
+            request.data = fileRef.data.toString();
+            request.contentType = "image/jpeg";
+
+            fileRef.uploadUnencoded(request);
+            PopUpManager.addPopUp(myPopUp, this, true);
+            PopUpManager.centerPopUp(myPopUp);
+        }
+
+        /*
+        This event will be fired everytime the server reports progress back.
+        We update the label and the progress of the ProgressBar with the new status from bytesLoaded.
+        */
+        private function progressHandler(event:ProgressEvent):void
+        {
+            var progress:Number = Math.round((event.bytesLoaded/event.bytesTotal)*100);
+
+            myProgressBar.setProgress(progress, 100);
+            myProgressBar.label = "Uploading Progress: " + progress + "%";
+        }
+
+        /*
+        Once our file has been uploaded we will receive the JSON response from Firebase.
+        We pass the JSON string into a TextArea and remove the popup.
+        */
+        private function uploadCompleteDataHandler(event:DataEvent):void
+        {
+            PopUpManager.removePopUp(myPopUp);
+            myTextArea.text = event.data.toString();
+        }
+
+        ]]>
+
+    </fx:Script>
+
+    <fx:Declarations>
+        <s:Panel id="myPopUp" title="Uploading" width="270" height="80">
+            <mx:ProgressBar id="myProgressBar" width="250" minimum="0" maximum="100" mode="manual" verticalCenter="0" horizontalCenter="0"/>
+        </s:Panel>
+    </fx:Declarations>
+
+    <s:VGroup horizontalCenter="0" verticalCenter="0" horizontalAlign="center" gap="10">
+        <s:Button label="Browse File" click="uploadFile(event)"/>
+        <s:TextArea id="myTextArea" width="400" height="300"/>
+    </s:VGroup>
+
+</s:WindowedApplication>
