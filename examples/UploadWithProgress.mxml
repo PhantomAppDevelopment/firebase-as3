@@ -33,7 +33,7 @@
 
         /*
         We prepare the URLRequest that will be sent in the upload method.
-        The file will be sent as a String that represnets the bytes from the file.
+        The file will be sent as a String that represents the bytes from the file.
         We are using uploadUnencoded instead of upload since we have already encoded our data by sending it as a String.
         Finally, we tell the PopUpManager to add our custom popup and center it. 
         */

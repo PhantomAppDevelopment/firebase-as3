@@ -116,6 +116,7 @@ private function uploadFile():void
 				
     var fileStream:FileStream = new FileStream();
     fileStream.open(file, FileMode.READ);
+    
     var bytes:ByteArray = new ByteArray();
     fileStream.readBytes(bytes);
     fileStream.close();
@@ -156,6 +157,48 @@ A successful response will look like the following JSON structure:
 Your new file and a `savegames` folder will instantly appear in the Storage section from the Firebase console.
 
 The `contentType` doesn't need to be accurate, but it is recommended to set it properly.
+
+## Uploading with Progress Indicator
+
+You can also upload files using the `upload` and `uploadUnencoded` methods from the `File` and `FileReference` classes.
+
+This example will demonstrate how to upload a file from a fixed location and retrieve the upload progress.
+
+```actionscript
+private function uploadFile():void
+{
+    var file:File = File.applicationStorageDirectory.resolvePath("heavy_picture.jpg");
+    file.addEventListener(ProgressEvent.PROGRESS, progressHandler);
+    ile.addEventListener(DataEvent.UPLOAD_COMPLETE_DATA, uploadCompleteDataHandler);
+
+    var fileStream:FileStream = new FileStream();
+    fileStream.open(file, FileMode.READ);
+
+    var bytes:ByteArray = new ByteArray();
+    fileStream.readBytes(bytes);
+    fileStream.close();
+
+    var request:URLRequest = new URLRequest("https://firebasestorage.googleapis.com/v0/b/<YOUR-PROJECT-ID>.appspot.com/o/pictures%2F"+"heavy_picture.jpg");
+    request.method = URLRequestMethod.POST;
+    request.data = bytes.toString();
+    request.contentType = "image/jpeg";
+
+    file.uploadUnencoded(request);
+}
+
+private function progressHandler(event:ProgressEvent):void
+{
+    var progress:Number = Math.round((event.bytesLoaded/event.bytesTotal)*100);
+    trace("Upload Progress: " + progress + "%");
+}
+
+private function uploadCompleteDataHandler(event:DataEvent):void
+{
+    trace(event.data); //Here you will receive the file metadata from Firebase Storage.
+}
+```
+
+It is required to send the file as a `String` that represents the file bytes and use the `uploadEncoded` method.
 
 ## Uploading with Auth
 
