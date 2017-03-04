@@ -198,7 +198,7 @@ private function uploadCompleteDataHandler(event:DataEvent):void
 }
 ```
 
-It is required to send the file as a `String` that represents the file bytes and use the `uploadEncoded` method.
+It is required to send the file as a `String` that represents the file bytes and use the `uploadUnencoded` method.
 
 ## Uploading with Auth
 
@@ -211,6 +211,7 @@ private function uploadFile(authToken:String):void
 				
     var fileStream:FileStream = new FileStream();
     fileStream.open(file, FileMode.READ);
+    
     var bytes:ByteArray = new ByteArray();
     fileStream.readBytes(bytes);
     fileStream.close();
