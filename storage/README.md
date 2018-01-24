@@ -90,7 +90,7 @@ service firebase.storage {
 Since Firebase returns useful error information we will use the following `Event.COMPLETE` and `IOErrorEvent.IOERROR` listeners in all of our requests.
 
 ```actionscript
-private function uploadComplete(event:flash.events.Event):void
+private function taskComplete(event:flash.events.Event):void
 {
     trace(event.currentTarget.data);
 }
@@ -127,7 +127,7 @@ private function uploadFile():void
     request.contentType = "text/plain";
     			
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, uploadComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);			
 }
@@ -225,7 +225,7 @@ private function uploadFile(authToken:String):void
     request.requestHeaders.push(header);
 
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, uploadComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);			
 }
@@ -270,7 +270,7 @@ private function deleteFile():void
     request.requestHeaders.push(header);
 				
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, deleteComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);
 }
@@ -294,7 +294,7 @@ private function deleteFile(authToken:String):void
     request.requestHeaders.push(header2);
 				
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, deleteComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);
 }
@@ -322,7 +322,7 @@ private function updateMetadata():void
     request.requestHeaders.push(header2);
 				
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, updateComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);
 }
@@ -373,7 +373,7 @@ private function updateMetadata(authToken:String):void
     request.requestHeaders.push(header3);
 				
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, updateComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);
 }
@@ -538,7 +538,7 @@ private function uploadPersonalFile(authToken:String, localId:String):void
     request.requestHeaders.push(header);
 				
     var loader:URLLoader = new URLLoader();
-    loader.addEventListener(flash.events.Event.COMPLETE, uploadComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, taskComplete);
     loader.addEventListener(flash.events.IOErrorEvent.IO_ERROR, errorHandler);
     loader.load(request);				
 }

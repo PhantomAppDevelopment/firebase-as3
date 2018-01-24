@@ -115,11 +115,11 @@ private function login(email:String, password:String):void
 				
     var loader:URLLoader = new URLLoader();	
     loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
-    loader.addEventListener(flash.events.Event.COMPLETE, signInComplete);
+    loader.addEventListener(flash.events.Event.COMPLETE, loginComplete);
     loader.load(request);				
 }
 			
-private function signInComplete(event:flash.events.Event):void
+private function loginComplete(event:flash.events.Event):void
 {
     trace(event.currentTarget.data);
 }
@@ -202,7 +202,7 @@ This method is similar to the Reset Password one, you need to provide the follow
 Name | Description
 ---|---
 `email` | The Email Address you want to verify.
-`requestType` | Set to: `EMAIL_VERIFY`
+`requestType` | Set to: `VERIFY_EMAIL`
 `idToken` | A long encoded String that contains user information. You can obtain this String from the response in the Sign Up and Sign In methods. 
 
 ```actionscript
@@ -211,7 +211,7 @@ private function verifyEmail(idToken:String, email:String):void
     var myObject:Object = new Object();
     myObject.email = email;
     myObject.idToken = idToken;
-    myObject.requestType = "EMAIL_VERIFY";
+    myObject.requestType = "VERIFY_EMAIL";
 				
     var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
 				
@@ -421,21 +421,21 @@ Name | Description
 ```actionscript
 private function refreshToken(refreshToken:String):void
 {
-	var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
-			
-	var myObject:Object = new Object();
-	myObject.grant_type = "refresh_token";
+    var header:URLRequestHeader = new URLRequestHeader("Content-Type", "application/json");
+    
+    var myObject:Object = new Object();
+    myObject.grant_type = "refresh_token";
     myObject.refresh_token = refreshToken;			
-			
-	var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
-	request.method = URLRequestMethod.POST;
-	request.data = JSON.stringify(myObject);
-	request.requestHeaders.push(header);
-			
-	var loader:URLLoader = new URLLoader();
-	loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
-	loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
-	loader.load(request);	
+	
+    var request:URLRequest = new URLRequest("https://securetoken.googleapis.com/v1/token?key="+FIREBASE_API_KEY);
+    request.method = URLRequestMethod.POST;
+    request.data = JSON.stringify(myObject);
+    request.requestHeaders.push(header);
+    
+    var loader:URLLoader = new URLLoader();
+    loader.addEventListener(flash.events.Event.COMPLETE, refreshTokenLoaded);
+    loader.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+    loader.load(request);
 }
 		
 private function refreshTokenLoaded(event:flash.events.Event):void
@@ -446,7 +446,7 @@ private function refreshTokenLoaded(event:flash.events.Event):void
 
 private function errorHandler(event:flash.events.IOErrorEvent):void
 {
-	trace(event.currentTarget.data);
+    trace(event.currentTarget.data);
 }
 ``` 
 

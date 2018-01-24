@@ -6,6 +6,8 @@ Each provider requires a different setup process. Individual guides are provided
 
 ## Google
 
+Update: This provider doesn't work anymore with `StageWebView`. The instructions won't be deleted for historical purpose.
+
 This provider doesn't require special configuration since it is automatically configured when you create your Firebase project.
 
 Follow these steps to enable it:
