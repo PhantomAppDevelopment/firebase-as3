@@ -99,7 +99,7 @@ This rule is almost the same as the default one, the only difference is that it 
 
 ## Private (User Specific)
 
-This is where Firebase auth and rules are best used; each user can save their own data that they can only read and write.
+This is where Firebase auth and rules are best used; each user can have their own data that they can only read and write.
 
 A common example is an app where users can manage a todo list.
 
@@ -117,7 +117,7 @@ A common example is an app where users can manage a todo list.
 ```
 
 We have a main `todos` node. Inside that node each user will have their own sub node.
-Each sub node wil contain the todos from the specified user.
+Each sub node will contain the todos from the specified user.
 
 The `auth.uid` parameter means the following:
 
@@ -182,7 +182,7 @@ Very similar to the previous one, the only difference is the `auth` parameter in
 
 ## Realtime Database
 
-Changes in the database can be read at realtime. Instead of using an `URLRequest` you must use an `URLStream` with a special `URLRequestHeader`.
+Changes in the database can be read at realtime. Instead of using an `URLLoader` you must use an `URLStream` with a special `URLRequestHeader`.
 
 In this case we specify to read the contents of the `breakingnews` node.
 
@@ -214,7 +214,7 @@ Remember to remove the event listener once you have finished working with the re
 
 Auth works exactly the same as with non-realtime data, you only need to provide the `auth` parameter with a valid `authToken` in the URL.
 
-## Modyfing the Database
+## Modifying the Database
 
 You can add `(INSERT)`, remove `(DELETE)` and modify `(UPDATE)` data from the database. You only need to send your data `JSON` encoded.
 
